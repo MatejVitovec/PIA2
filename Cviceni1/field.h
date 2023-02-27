@@ -10,20 +10,23 @@ class Field
         Field();
         Field(int xMax, int yMax);
 
+        int getSizeI() const;
+        int getSizeJ() const;
+
         T operator()(int i, int j) const
         {
-            return data[j*xSize + i];
+            return data[j*iSize + i];
         }
 
         T& operator()(int i, int j)
         {
-            return data[j*xSize + i];
+            return data[j*iSize + i];
         }
 
     private:
         std::vector<T> data;
-        int xSize;
-        int ySize;
+        int iSize;
+        int jSize;
 };
 
 template <typename T>
@@ -35,11 +38,22 @@ Field<T>::Field()
 template <typename T>
 Field<T>::Field(int xMax, int yMax)
 {
-    xSize = xMax + 1;
-    ySize = yMax + 1;
-    data = std::vector<T>(xSize*ySize); 
+    iSize = xMax;
+    jSize = yMax;
+    data = std::vector<T>(iSize*jSize); 
 }
 
+template <typename T>
+int Field<T>::getSizeI() const
+{
+    return iSize;
+}
+
+template <typename T>
+int Field<T>::getSizeJ() const
+{
+    return jSize;
+}
 
 
 /*template <typename T>
