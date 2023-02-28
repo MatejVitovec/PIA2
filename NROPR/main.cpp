@@ -5,13 +5,13 @@
 
 double analytical(double x)
 {
-    double c = 1;
-    return c*std::exp(-2*x);
+    double c = 1.0;
+    return c*std::exp(-2.0*x);
 }
 
 double F(double y)
 {
-    return -2*y;
+    return -2.0*y;
 }
 
 double initCondition(double t)
