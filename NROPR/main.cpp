@@ -14,7 +14,7 @@ double F(double y)
     return -2.0*y;
 }
 
-double initCondition(double t)
+double initCondition()
 {
     return 1.0;
 }
@@ -23,7 +23,7 @@ double explicitEuler(double h, double start, double end)
 {
     int n = int((end - start)/h);
 
-    double y = initCondition(start);
+    double y = initCondition();
 
     for (int i = 0; i < n; i++)
     {
