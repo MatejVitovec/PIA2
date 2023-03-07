@@ -14,7 +14,7 @@ class Field
         int getSize() const;
         int getSizeI() const;
         int getSizeJ() const;
-        T mean() const;
+        T mean();
 
         T operator()(int i, int j) const
         {
@@ -30,7 +30,7 @@ class Field
         std::vector<T> data;
         int iSize;
         int jSize;
-        void meanThread(T& sum, int startIdx, int endIdx, std::mutex m) const;
+        void meanThread(T& sum, int startIdx, int endIdx, std::mutex& m);
         
 };
 
@@ -57,9 +57,9 @@ int Field<T>::getSizeJ() const
 
 
 template <typename T>
-T Field<T>::mean() const
+T Field<T>::mean()
 {
-    const int threadCount = 2;
+    const int threadCount = 4;
     std::mutex m;
 
     T sum = 0.0; 
@@ -68,18 +68,25 @@ T Field<T>::mean() const
 
     int interval = n/threadCount;
     int rest = n%threadCount;
+    
+    std::vector<std::thread> threads;
 
-    std::thread thread1(&Field<T>::meanThread, this, sum, 0, interval, m);
-    std::thread thread2(&Field<T>::meanThread, this, sum, interval, interval*2 + rest, m);
-
-    thread1.join();
-    thread2.join();
+    for (int i = 0; i < threadCount-1; i++)
+    {
+        threads.push_back(std::thread(&Field<T>::meanThread, this, std::ref(sum), interval*i, interval*(i+1), std::ref(m)));
+    }
+    threads.push_back(std::thread(&Field<T>::meanThread, this, std::ref(sum), interval*(threadCount-1), interval*threadCount + rest, std::ref(m)));
+    
+    for (int i = 0; i < threadCount; i++)
+    {
+        threads[i].join();
+    }
 
     return sum/n;
 }
 
 template <typename T>
-void Field<T>::meanThread(T& sum, int startIdx, int endIdx, std::mutex m) const
+void Field<T>::meanThread(T& sum, int startIdx, int endIdx, std::mutex& m)
 {
     T auxSum = 0.0;
 
