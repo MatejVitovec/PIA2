@@ -1,6 +1,6 @@
 #include <iostream>
 #include <string>
-#include "field.h"
+#include "Field.h"
 #include "vector3d.h"
 
 int main()

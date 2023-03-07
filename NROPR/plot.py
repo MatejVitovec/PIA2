@@ -1,4 +1,3 @@
-import sys
 from matplotlib import pyplot as plt
 
 inputFileName = "NROPR/results.txt"
@@ -16,8 +15,6 @@ for line in f:
     E.append(float(aux[1]))
 
 f.close()
-
-
 
 plt.figure()
 
