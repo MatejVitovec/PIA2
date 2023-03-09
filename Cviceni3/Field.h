@@ -14,7 +14,8 @@ class Field
         int getSize() const;
         int getSizeI() const;
         int getSizeJ() const;
-        T mean();
+        T mean() const;
+        T meanParallel(const int& threadCount);
 
         T operator()(int i, int j) const
         {
@@ -53,13 +54,23 @@ int Field<T>::getSizeJ() const
     return jSize;
 }
 
+template <typename T>
+T Field<T>::mean() const
+{
+    T sum;
+    int n = iSize*jSize;
 
+    for (int i = 0; i < n; i++)
+    {
+        sum += data[i];
+    }
 
+    return sum/n;
+}
 
 template <typename T>
-T Field<T>::mean()
+T Field<T>::meanParallel(const int& threadCount)
 {
-    const int threadCount = 4;
     std::mutex m;
 
     T sum = 0.0; 
