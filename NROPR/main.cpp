@@ -21,11 +21,11 @@ double initCondition()
 
 double explicitEuler(double h, double start, double end)
 {
-    int n = int((end - start)/h);
+    long n = (end - start)/h;
 
     double y = initCondition();
 
-    for (int i = 0; i < n; i++)
+    for (long i = 0; i < n; i++)
     {
         y += h*F(y);
     }
@@ -37,7 +37,7 @@ int main()
 {
     std::ofstream writeToFile("results.txt");
 
-    for (int i = 1; i < 40; i++)
+    for (int i = 1; i < 42; i++)
     {
         double h = (2.0/(pow(2.0,i)));
         double result = explicitEuler(h, 0.0, 1.0);
@@ -45,7 +45,9 @@ int main()
         double E = std::fabs(analytical(1.0) - result);
 
         writeToFile << h << "," << E << std::endl;
-    }    
+
+        std::cout << i <<". iterace" << std::endl;
+    }
 
     return 0;
 }

@@ -18,7 +18,7 @@ f.close()
 
 plt.figure()
 
-plt.plot(h, E, "r-")
+plt.plot(h, E, "kx-")
 plt.yscale("log")
 plt.xscale("log")
 plt.ylabel("E")
