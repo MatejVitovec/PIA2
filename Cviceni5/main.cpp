@@ -23,6 +23,8 @@ int main() {
 
 	mySolver.solve();
 
+	mySolver.saveData("data.txt");
+
 
 	Field<double> u = mySolver.getU();
 
