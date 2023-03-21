@@ -16,9 +16,9 @@ for line in f:
 
 f.close()
 
-plt.figure()
+plt.figure(figsize=(8,6))
 
-plt.plot(h, E, "kx-")
+plt.plot(h, E, "k.-")
 plt.yscale("log")
 plt.xscale("log")
 plt.ylabel("E")
