@@ -15,6 +15,11 @@ class Field
         int size() const;
         int getSizeI() const;
         int getSizeJ() const;
+
+        T normEuclid() const;
+        T oneNorm() const;
+        T inftyNorm() const;
+
         T mean() const;
         T meanParallel(const int& threadCount);
 
@@ -113,6 +118,57 @@ void Field<T>::meanThread(T& sum, int startIdx, int endIdx, std::mutex& m)
 
     m.unlock();
 }
+
+template <typename T>
+T Field<T>::normEuclid() const
+{
+    T aux = 0.0;
+
+    for (int i = 0; i < iSize*jSize; i++)
+    {
+        aux += data[i]*data[i];
+    }
+
+    return sqrt(aux);    
+}
+
+template <typename T>
+T Field<T>::oneNorm() const
+{
+    T norm;
+    for (int i = 0; i < iSize; i++)
+    {
+        T auxSum;
+        for (int j = 0; j < jSize; j++)
+        {
+            auxSum += data[j*iSize + i];
+        }
+
+        norm = std::max(norm, auxSum);        
+    }
+
+    return norm;    
+}
+
+template <typename T>
+T Field<T>::inftyNorm() const
+{
+    T norm;
+    for (int j = 0; j < jSize; j++)
+    {
+        T auxSum;
+        for (int i = 0; i < iSize; i++)
+        {
+            auxSum += data[j*iSize + i];
+        }
+
+        norm = std::max(norm, auxSum);        
+    }
+
+    return norm;    
+}
+
+
 
 
 template <typename T>

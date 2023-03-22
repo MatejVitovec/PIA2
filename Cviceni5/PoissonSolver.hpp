@@ -2,13 +2,13 @@
 #define POISSONSOLVER_H
 
 #include <memory>
-#include "Field.h"
+#include "Field.hpp"
 #include "BoundaryCondition.hpp"
 
 class PoissonSolver
 {
     public:
-        PoissonSolver(int n, double h) : u(n, n), un(n, n), h(h), n(n) {};
+        PoissonSolver(int n, double h) : u(n, n), un(n, n), h(h), n(n), targetError(10e-6) {};
 
         void setBoundaryCondition(std::shared_ptr<BoundaryCondition>top, std::shared_ptr<BoundaryCondition>bottom, std::shared_ptr<BoundaryCondition> left, std::shared_ptr<BoundaryCondition> right);
         void solve();
@@ -19,6 +19,7 @@ class PoissonSolver
     private:
         double f(int i, int j, double h);
         void applyBoundaryCondition();
+        double calculateError();
         
         std::shared_ptr<BoundaryCondition> topBC;
         std::shared_ptr<BoundaryCondition> bottomBC;
@@ -27,6 +28,8 @@ class PoissonSolver
 
         const double h;
         const double n;
+
+        double targetError;
 
         Field<double> u;
         Field<double> un;

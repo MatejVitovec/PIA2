@@ -1,4 +1,5 @@
 #include <cmath>
+#include <omp.h>
 
 #include "PoissonSolver.hpp"
 #include <iostream>
@@ -53,12 +54,17 @@ void PoissonSolver::applyBoundaryCondition()
 
 void PoissonSolver::solve()
 {
-	int iter = 10;
+	//Jacobi
 
 	applyBoundaryCondition();
 
-	for (int ii = 0; ii < iter; ii++)
+	int iter = 0;
+	double error = 10e10;
+
+	while (error > targetError)
 	{
+		++iter;
+
 		for (int j = 1; j < n-1; j++)
 		{
 			for (int i = 1; i < n-1; i++)
@@ -66,9 +72,22 @@ void PoissonSolver::solve()
 				un(i, j) = (1.0/4.0)*(h*h*f(i, j, h) + u(i, j-1) + u(i-1, j) + u(i, j+1) + u(i+1, j));
 			}			
 		}
-		u = un;		
+
+		error = calculateError();
+
+		u = un;
 	}
+
+	std::cout << "vypocet probehl s " << iter << " ietracemi" << std::endl; 
 }
+
+double PoissonSolver::calculateError()
+{
+	Field<double> aux = un - u;
+
+	return aux.normEuclid();	
+}
+
 
 Field<double> PoissonSolver::getU()
 {
@@ -86,8 +105,7 @@ void PoissonSolver::saveData(std::string outputFileName)
         for (int i = 0; i < n; i++)
 		{
 			writeToFile << u(i, j) << std::endl;
-		}
-		
+		}		
     }
         
     writeToFile.close();
