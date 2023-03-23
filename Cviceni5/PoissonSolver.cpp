@@ -14,9 +14,9 @@ void PoissonSolver::setBoundaryCondition(std::shared_ptr<BoundaryCondition>top, 
 }
 
 
-double PoissonSolver::f(int i, int j, double h)
+double PoissonSolver::f(int i, int j, double hh)
 {
-	if((pow(i*h - 0.5, 2.0) + pow(j*h - 0.5, 2.0)) < 0.04)
+	if((pow(i*hh - 0.5, 2.0) + pow(j*hh - 0.5, 2.0)) < 0.04)
 	{
 		return 50.0;
 	}
@@ -60,16 +60,20 @@ void PoissonSolver::solve()
 
 	int iter = 0;
 	double error = 10e10;
+	int nn = n - 1;
+
+	auto stop1 = std::chrono::high_resolution_clock::now();
 
 	while (error > targetError)
 	{
 		++iter;
 
-		for (int j = 1; j < n-1; j++)
+		#pragma omp parallel for collapse(2)
+		for (int j = 1; j < nn; ++j)
 		{
-			for (int i = 1; i < n-1; i++)
+			for (int i = 1; i < nn; ++i)
 			{
-				un(i, j) = (1.0/4.0)*(h*h*f(i, j, h) + u(i, j-1) + u(i-1, j) + u(i, j+1) + u(i+1, j));
+				un(i, j) = (1.0/4.0)*(h*h*f(i, j, h) + u(i, j-1) + u(i-1, j) + u(i, j+1) + u(i+1, j));				
 			}			
 		}
 
@@ -77,6 +81,10 @@ void PoissonSolver::solve()
 
 		u = un;
 	}
+
+
+	auto stop2 = std::chrono::high_resolution_clock::now();
+	std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(stop2 - stop1).count() << " ms\n";
 
 	std::cout << "vypocet probehl s " << iter << " ietracemi" << std::endl; 
 }

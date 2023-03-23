@@ -7,6 +7,9 @@ class DirichletBC : public BoundaryCondition
         DirichletBC() : value(0.0) {};
         DirichletBC(double val) : value(val) {};
 
+        double getValue();
+        void setValue(double val);
+
         virtual double apply() const;
 
     private:
