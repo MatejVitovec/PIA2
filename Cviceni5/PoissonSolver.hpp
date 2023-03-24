@@ -8,32 +8,44 @@
 class PoissonSolver
 {
     public:
-        PoissonSolver(int n, double h) : u(n, n), un(n, n), h(h), n(n), targetError(10e-6) {};
+        PoissonSolver(double h) : n((int) 1.0/h),
+                                interval(1.0),
+                                h(h),
+                                u(n, n),
+                                func(n, n),                                
+                                targetError(10e-6) {};
 
         void setBoundaryCondition(std::shared_ptr<BoundaryCondition>top, std::shared_ptr<BoundaryCondition>bottom, std::shared_ptr<BoundaryCondition> left, std::shared_ptr<BoundaryCondition> right);
+        void setTargetError(double err);
+        void setInterval(double interval_);
+        void setStep(double hh);
+        void setFunctionValues(Field<double> f_);
+        void setFunctionValues(double (*function_ptr)(int, int, double));
+
         void solve();
+        void solveGaussSeide();
         void saveData(std::string outputFileName);
 
-        Field<double> getU();
+        Field<double> getResult();
 
     private:
-        double f(int i, int j, double h);
-        void applyBoundaryCondition();
-        double calculateError();
+        void solveBoundaryCondition(Field<double>& un);
+        void solveBoundaryConditionRedBlack(Field<double>& u, Field<double>& un, int redBlack);
+        double calculateError(const Field<double>& un);
         
         std::shared_ptr<BoundaryCondition> topBC;
         std::shared_ptr<BoundaryCondition> bottomBC;
         std::shared_ptr<BoundaryCondition> leftBC;
         std::shared_ptr<BoundaryCondition> rightBC;
 
-        const double h;
-        const double n;
+        double interval;
+        double h;
+        int n;
 
         double targetError;
 
         Field<double> u;
-        Field<double> un;
-
+        Field<double> func;
 };
 
 #endif // POISSONSOLVER_H

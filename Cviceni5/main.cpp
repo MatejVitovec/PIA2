@@ -9,40 +9,43 @@
 #include "PoissonSolver.hpp"
 #include "BoundaryCondition.hpp"
 #include "DirichletBC.hpp"
+#include "NeumannBC.hpp"
+
+double poissonFunction(int i, int j, double hh)
+{
+	if((pow(i*hh - 0.5, 2.0) + pow(j*hh - 0.5, 2.0)) < 0.04)
+	{
+		//return 50.0;
+		return 0.0;
+	}
+	else
+	{
+		return 0.0;
+	}
+}
+
 
 int main() {
 
-	omp_set_num_threads(8);
+	//omp_set_num_threads(8);
 
-	double h = 0.01;
-	PoissonSolver mySolver = PoissonSolver((int) 1.0/h, h);
+	PoissonSolver mySolver = PoissonSolver(0.01);
 
-	std::shared_ptr<BoundaryCondition> topBC = std::make_shared<DirichletBC>(0.0);
-	std::shared_ptr<BoundaryCondition> bottomBC = std::make_shared<DirichletBC>(0.0);
-	std::shared_ptr<BoundaryCondition> leftBC = std::make_shared<DirichletBC>(0.0);
-	std::shared_ptr<BoundaryCondition> rightBC = std::make_shared<DirichletBC>(0.0);
-	mySolver.setBoundaryCondition(topBC, bottomBC, leftBC, rightBC);
+	mySolver.setFunctionValues(poissonFunction);
 
-	//auto stop1 = std::chrono::high_resolution_clock::now();
+	mySolver.setBoundaryCondition(std::make_shared<DirichletBC>(3.0),
+									std::make_shared<DirichletBC>(0.0),
+									std::make_shared<DirichletBC>(0.0),
+									std::make_shared<DirichletBC>(3.0));
 
-	mySolver.solve();
+	auto stop1 = std::chrono::high_resolution_clock::now();
 
-	//auto stop2 = std::chrono::high_resolution_clock::now();
-	//std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(stop2 - stop1).count() << " ms\n";
+	mySolver.solveGaussSeide();
+
+	auto stop2 = std::chrono::high_resolution_clock::now();
+	std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(stop2 - stop1).count() << " ms\n";
 
 	mySolver.saveData("data.txt");
-
-
-	///Field<double> u = mySolver.getU();
-
-
-    /*auto stop1 = std::chrono::high_resolution_clock::now();
-
-	std::cout << std::fixed << f.meanParallel(8) << "\n";
-	
-	auto stop2 = std::chrono::high_resolution_clock::now();
-	std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(stop2 - stop1).count() << " ms\n";*/
-
 
 	return 0;
 }

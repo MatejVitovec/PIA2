@@ -10,7 +10,7 @@ class DirichletBC : public BoundaryCondition
         double getValue();
         void setValue(double val);
 
-        virtual double apply() const;
+        virtual double apply(const double& u1 ,const double& u2, const double& u3, const double& f, const double& h) const;
 
     private:
         double value;

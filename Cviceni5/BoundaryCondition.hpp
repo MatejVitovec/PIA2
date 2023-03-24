@@ -4,8 +4,8 @@
 class BoundaryCondition
 {
     public:
-        virtual double apply() const = 0;
-        virtual double apply(int i) const = 0;
+        //i j k clokwise
+        virtual double apply(const double& u1 ,const double& u2, const double& u3, const double& f, const double& h) const = 0;
 
     protected:
 

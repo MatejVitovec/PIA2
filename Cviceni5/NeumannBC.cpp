@@ -3,16 +3,9 @@
 #include "BoundaryCondition.hpp"
 #include "NeumannBC.hpp"
 
-double NeumannBC::apply() const
+double NeumannBC::apply(const double& u1 ,const double& u2, const double& u3, const double& f, const double& h) const
 {
-    //TODO
-    return value;
-}
-
-double NeumannBC::apply(int i) const
-{
-    //TODO
-    return value;
+    return 0.5*u2 + 0.25*u1 + 0.25*u3 + 0.25*h*h*f + 0.5*h*value;
 }
 
 double NeumannBC::getValue()
