@@ -40,7 +40,8 @@ int main() {
 
 	auto stop1 = std::chrono::high_resolution_clock::now();
 
-	mySolver.solveGaussSeide();
+	//mySolver.solveGaussSeide();
+	mySolver.solve();
 
 	auto stop2 = std::chrono::high_resolution_clock::now();
 	std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(stop2 - stop1).count() << " ms\n";

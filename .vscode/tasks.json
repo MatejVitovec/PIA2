@@ -8,7 +8,6 @@
 			"args": [
 				"-fdiagnostics-color=always",
 				"-fopenmp",
-				"-O3",
 				"-g",
 				"*.cpp",
 				"-o",

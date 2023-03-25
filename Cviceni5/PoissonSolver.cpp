@@ -39,7 +39,7 @@ void PoissonSolver::setFunctionValues(Field<double> f_)
 	func = f_;
 }
 
- void PoissonSolver::setFunctionValues(double (*function_ptr)(int, int, double))
+void PoissonSolver::setFunctionValues(double (*function_ptr)(int, int, double))
  {
 	for (int j = 0; j < n; j++)
 	{
@@ -236,41 +236,54 @@ void PoissonSolver::solveGaussSeide()
 		++iter;
 
 		//red nodes 0,0 ; 1,1
-		//#pragma omp parallel for collapse(2)
-		for (int j = 1; j < nn; j = j + 2)
+		/*#pragma omp parallel
 		{
-			for (int i = 1; i < nn; i = i + 2)
+			#pragma omp for collapse(2)*/
+			for (int j = 1; j < nn; j = j + 2)
 			{
-				uRed(i, j) = (1.0/4.0)*(h*h*func(i, j) + uBlack(i, j-1) + uBlack(i-1, j) + uBlack(i, j+1) + uBlack(i+1, j));
-			}			
-		}
+				for (int i = 1; i < nn; i = i + 2)
+				{
+					uRed(i, j) = (1.0/4.0)*(h*h*func(i, j) + uBlack(i, j-1) + uBlack(i-1, j) + uBlack(i, j+1) + uBlack(i+1, j));
+				}			
+			}
 
-		for (int j = 2; j < nn; j = j + 2)
-		{
-			for (int i = 2; i < nn; i = i + 2)
+			//#pragma omp for collapse(2)
+			for (int j = 2; j < nn; j = j + 2)
 			{
-				uRed(i, j) = (1.0/4.0)*(h*h*func(i, j) + uBlack(i, j-1) + uBlack(i-1, j) + uBlack(i, j+1) + uBlack(i+1, j));
-			}			
-		}
+				for (int i = 2; i < nn; i = i + 2)
+				{
+					uRed(i, j) = (1.0/4.0)*(h*h*func(i, j) + uBlack(i, j-1) + uBlack(i-1, j) + uBlack(i, j+1) + uBlack(i+1, j));
+				}			
+			}
+
+			/*#pragma omp barrier
+		}*/
 
 		solveBoundaryConditionRedBlack(uBlack, uRed, 0);
 
 		//black nodes 0,1 ; 1,0
-		//#pragma omp parallel for collapse(2)
-		for (int j = 1; j < nn; j = j + 2)
+		/*#pragma omp parallel
 		{
-			for (int i = 2; i < nn; i = i + 2)
+			#pragma omp for collapse(2)*/
+			for (int j = 1; j < nn; j = j + 2)
 			{
-				uBlack(i, j) = (1.0/4.0)*(h*h*func(i, j) + uRed(i, j-1) + uRed(i-1, j) + uRed(i, j+1) + uRed(i+1, j));
-			}			
-		}
-		for (int j = 2; j < nn; j = j + 2)
-		{
-			for (int i = 1; i < nn; i = i + 2)
+				for (int i = 2; i < nn; i = i + 2)
+				{
+					uBlack(i, j) = (1.0/4.0)*(h*h*func(i, j) + uRed(i, j-1) + uRed(i-1, j) + uRed(i, j+1) + uRed(i+1, j));
+				}			
+			}
+
+			//#pragma omp for collapse(2)
+			for (int j = 2; j < nn; j = j + 2)
 			{
-				uBlack(i, j) = (1.0/4.0)*(h*h*func(i, j) + uRed(i, j-1) + uRed(i-1, j) + uRed(i, j+1) + uRed(i+1, j));
-			}			
-		}
+				for (int i = 1; i < nn; i = i + 2)
+				{
+					uBlack(i, j) = (1.0/4.0)*(h*h*func(i, j) + uRed(i, j-1) + uRed(i-1, j) + uRed(i, j+1) + uRed(i+1, j));
+				}			
+			}
+
+			/*#pragma omp barrier
+		}*/
 
 		solveBoundaryConditionRedBlack(uRed, uBlack, 1);
 
@@ -279,10 +292,8 @@ void PoissonSolver::solveGaussSeide()
 		u = un;
 	}
 
-	std::cout << "vypocet probehl s " << iter << " ietracemi" << std::endl; 
+	std::cout << "vypocet probehl s " << iter << " iteracemi" << std::endl; 
 }
-
-
 
 double PoissonSolver::calculateError(const Field<double>& un)
 {
@@ -290,7 +301,6 @@ double PoissonSolver::calculateError(const Field<double>& un)
 
 	return aux.normEuclid();
 }
-
 
 Field<double> PoissonSolver::getResult()
 {
