@@ -46,9 +46,9 @@ void PoissonSolver::setFunctionValues(Field<double> f_)
 		for (int i = 0; i < n; i++)
 		{
 			func(i, j) = function_ptr(i, j, h);
-		}		
+		}
 	}
- }
+}
 
 void PoissonSolver::solveBoundaryCondition(Field<double>& un)
 {
@@ -161,6 +161,29 @@ void PoissonSolver::solveBoundaryConditionRedBlack(Field<double>& u, Field<doubl
 	}
 }
 
+Field<double> PoissonSolver::setRedBlack(Field<double>& u, int redBlack)
+{
+	Field<double> aux(n, n);
+
+	for (int j = 0; j < n; j = j + 2)
+	{
+		for (int i = 0 + redBlack; i < n; i = i + 2)
+		{
+			aux(i, j) = u(i, j);
+		}
+	}
+
+	for (int j = 1; j < n; j = j + 2)
+	{
+		for (int i = 1 - redBlack; i < n; i = i + 2)
+		{
+			aux(i, j) = u(i, j);
+		}
+	}
+
+	return aux;
+}
+
 void PoissonSolver::solve()
 {
 	//Jacobi	
@@ -205,8 +228,8 @@ void PoissonSolver::solveGaussSeide()
 
 	solveBoundaryCondition(u);
 	
-	Field<double> uRed = u;
-	Field<double> uBlack = u;
+	Field<double> uRed = setRedBlack(u, 0);
+	Field<double> uBlack = setRedBlack(u, 1);
 
 	while (error > targetError)
 	{
@@ -218,7 +241,7 @@ void PoissonSolver::solveGaussSeide()
 		{
 			for (int i = 1; i < nn; i = i + 2)
 			{
-				uRed(i, j) = (1.0/4.0)*(h*h*func(i, j) + uBlack(i, j-1) + uBlack(i-1, j) + uBlack(i, j+1) + uBlack(i+1, j));				
+				uRed(i, j) = (1.0/4.0)*(h*h*func(i, j) + uBlack(i, j-1) + uBlack(i-1, j) + uBlack(i, j+1) + uBlack(i+1, j));
 			}			
 		}
 
@@ -226,7 +249,7 @@ void PoissonSolver::solveGaussSeide()
 		{
 			for (int i = 2; i < nn; i = i + 2)
 			{
-				uRed(i, j) = (1.0/4.0)*(h*h*func(i, j) + uBlack(i, j-1) + uBlack(i-1, j) + uBlack(i, j+1) + uBlack(i+1, j));				
+				uRed(i, j) = (1.0/4.0)*(h*h*func(i, j) + uBlack(i, j-1) + uBlack(i-1, j) + uBlack(i, j+1) + uBlack(i+1, j));
 			}			
 		}
 
@@ -238,14 +261,14 @@ void PoissonSolver::solveGaussSeide()
 		{
 			for (int i = 2; i < nn; i = i + 2)
 			{
-				uBlack(i, j) = (1.0/4.0)*(h*h*func(i, j) + uRed(i, j-1) + uRed(i-1, j) + uRed(i, j+1) + uRed(i+1, j));				
+				uBlack(i, j) = (1.0/4.0)*(h*h*func(i, j) + uRed(i, j-1) + uRed(i-1, j) + uRed(i, j+1) + uRed(i+1, j));
 			}			
 		}
 		for (int j = 2; j < nn; j = j + 2)
 		{
 			for (int i = 1; i < nn; i = i + 2)
 			{
-				uBlack(i, j) = (1.0/4.0)*(h*h*func(i, j) + uRed(i, j-1) + uRed(i-1, j) + uRed(i, j+1) + uRed(i+1, j));				
+				uBlack(i, j) = (1.0/4.0)*(h*h*func(i, j) + uRed(i, j-1) + uRed(i-1, j) + uRed(i, j+1) + uRed(i+1, j));
 			}			
 		}
 

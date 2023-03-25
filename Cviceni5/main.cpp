@@ -15,8 +15,8 @@ double poissonFunction(int i, int j, double hh)
 {
 	if((pow(i*hh - 0.5, 2.0) + pow(j*hh - 0.5, 2.0)) < 0.04)
 	{
-		//return 50.0;
-		return 0.0;
+		return 50.0;
+		//return 0.0;
 	}
 	else
 	{
@@ -33,7 +33,7 @@ int main() {
 
 	mySolver.setFunctionValues(poissonFunction);
 
-	mySolver.setBoundaryCondition(std::make_shared<DirichletBC>(3.0),
+	mySolver.setBoundaryCondition(std::make_shared<NeumannBC>(0.0),
 									std::make_shared<DirichletBC>(0.0),
 									std::make_shared<DirichletBC>(0.0),
 									std::make_shared<DirichletBC>(3.0));

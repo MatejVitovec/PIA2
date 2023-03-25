@@ -31,6 +31,7 @@ class PoissonSolver
     private:
         void solveBoundaryCondition(Field<double>& un);
         void solveBoundaryConditionRedBlack(Field<double>& u, Field<double>& un, int redBlack);
+        Field<double> setRedBlack(Field<double>& u, int redBlack);
         double calculateError(const Field<double>& un);
         
         std::shared_ptr<BoundaryCondition> topBC;
