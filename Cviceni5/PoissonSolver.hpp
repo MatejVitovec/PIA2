@@ -23,14 +23,14 @@ class PoissonSolver
         void setFunctionValues(double (*function_ptr)(int, int, double));
 
         void solve();
-        void solveGaussSeide();
+        void solveGaussSeidel();
         void saveData(std::string outputFileName);
 
         Field<double> getResult();
 
     private:
         void solveBoundaryCondition(Field<double>& un);
-        void solveBoundaryConditionRedBlack(Field<double>& u, Field<double>& un, int redBlack);
+        void solveBoundaryConditionRedBlack(const Field<double>& u, Field<double>& un, int redBlack);
         Field<double> setRedBlack(Field<double>& u, int redBlack);
         double calculateError(const Field<double>& un);
         

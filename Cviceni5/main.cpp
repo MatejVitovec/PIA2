@@ -29,19 +29,20 @@ int main() {
 
 	//omp_set_num_threads(8);
 
-	PoissonSolver mySolver = PoissonSolver(0.01);
+	PoissonSolver mySolver = PoissonSolver(0.005);
 
 	mySolver.setFunctionValues(poissonFunction);
 
+	//top, bottom, left, right
 	mySolver.setBoundaryCondition(std::make_shared<NeumannBC>(0.0),
 									std::make_shared<DirichletBC>(0.0),
 									std::make_shared<DirichletBC>(0.0),
-									std::make_shared<DirichletBC>(3.0));
+									std::make_shared<DirichletBC>(2.0));
 
 	auto stop1 = std::chrono::high_resolution_clock::now();
 
-	//mySolver.solveGaussSeide();
-	mySolver.solve();
+	mySolver.solveGaussSeidel();
+	//mySolver.solve();
 
 	auto stop2 = std::chrono::high_resolution_clock::now();
 	std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(stop2 - stop1).count() << " ms\n";

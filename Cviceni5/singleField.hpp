@@ -2,7 +2,8 @@
 #define FIELD_H
 
 #include <vector>
-#include <omp.h>
+#include <thread>
+#include <mutex>
 
 template <typename T>
 class Field
@@ -16,8 +17,11 @@ class Field
         int getSizeJ() const;
 
         T normEuclid() const;
+        T oneNorm() const;
+        T inftyNorm() const;
 
         T mean() const;
+        T meanParallel(const int& threadCount);
 
         T operator()(int i, int j) const
         {
@@ -33,6 +37,7 @@ class Field
         std::vector<T> data;
         int iSize;
         int jSize;
+        void meanThread(T& sum, int startIdx, int endIdx, std::mutex& m);
         
 };
 
@@ -61,8 +66,7 @@ T Field<T>::mean() const
     T sum;
     int n = iSize*jSize;
 
-    #pragma omp parallel for reduction(+ : sum)
-    for (int i = 0; i < iSize*jSize; i++)
+    for (int i = 0; i < n; i++)
     {
         sum += data[i];
     }
@@ -71,11 +75,55 @@ T Field<T>::mean() const
 }
 
 template <typename T>
+T Field<T>::meanParallel(const int& threadCount)
+{
+    std::mutex m;
+
+    T sum = 0.0; 
+
+    int n = iSize*jSize;
+
+    int interval = n/threadCount;
+    int rest = n%threadCount;
+    
+    std::vector<std::thread> threads;
+
+    for (int i = 0; i < threadCount-1; i++)
+    {
+        threads.push_back(std::thread(&Field<T>::meanThread, this, std::ref(sum), interval*i, interval*(i+1), std::ref(m)));
+    }
+    threads.push_back(std::thread(&Field<T>::meanThread, this, std::ref(sum), interval*(threadCount-1), interval*threadCount + rest, std::ref(m)));
+    
+    for (int i = 0; i < threadCount; i++)
+    {
+        threads[i].join();
+    }
+
+    return sum/n;
+}
+
+template <typename T>
+void Field<T>::meanThread(T& sum, int startIdx, int endIdx, std::mutex& m)
+{
+    T auxSum = 0.0;
+
+    for (int i = startIdx; i < endIdx; i++)
+    {
+        auxSum += data[i];
+    }
+
+    m.lock();
+
+    sum += auxSum;
+
+    m.unlock();
+}
+
+template <typename T>
 T Field<T>::normEuclid() const
 {
     T aux = 0.0;
 
-    #pragma omp parallel for reduction(+ : aux)
     for (int i = 0; i < iSize*jSize; i++)
     {
         aux += data[i]*data[i];
@@ -85,13 +133,51 @@ T Field<T>::normEuclid() const
 }
 
 template <typename T>
+T Field<T>::oneNorm() const
+{
+    T norm;
+    for (int i = 0; i < iSize; i++)
+    {
+        T auxSum;
+        for (int j = 0; j < jSize; j++)
+        {
+            auxSum += data[j*iSize + i];
+        }
+
+        norm = std::max(norm, auxSum);        
+    }
+
+    return norm;    
+}
+
+template <typename T>
+T Field<T>::inftyNorm() const
+{
+    T norm;
+    for (int j = 0; j < jSize; j++)
+    {
+        T auxSum;
+        for (int i = 0; i < iSize; i++)
+        {
+            auxSum += data[j*iSize + i];
+        }
+
+        norm = std::max(norm, auxSum);        
+    }
+
+    return norm;    
+}
+
+
+
+
+template <typename T>
 Field<T> operator+ (const Field<T>& u, const Field<T>& v)
 {
     if(u.getSizeI() == v.getSizeI() && u.getSizeJ() == v.getSizeJ())
     {
         Field<T> out(u.getSizeI(), u.getSizeJ());
 
-        #pragma omp parallel for
         for (int j = 0; j < u.getSizeJ(); j++)
         {
             for (int i = 0; i < u.getSizeI(); i++)
@@ -113,7 +199,6 @@ Field<T> operator-(const Field<T>& u, const Field<T>& v)
     {
         Field<T> out(u.getSizeI(), u.getSizeJ());
 
-        #pragma omp parallel for
         for (int j = 0; j < u.getSizeJ(); j++)
         {
             for (int i = 0; i < u.getSizeI(); i++)
@@ -133,7 +218,6 @@ Field<T> operator+ (const Field<T>& u, const T& a)
 {
     Field<T> out(u.getSizeI(), u.getSizeJ());
 
-    #pragma omp parallel for
     for (int j = 0; j < u.getSizeJ(); j++)
     {
         for (int i = 0; i < u.getSizeI(); i++)
@@ -150,7 +234,6 @@ Field<T> operator- (const Field<T>& u, const T& a)
 {
     Field<T> out(u.getSizeI(), u.getSizeJ());
 
-    #pragma omp parallel for
     for (int j = 0; j < u.getSizeJ(); j++)
     {
         for (int i = 0; i < u.getSizeI(); i++)
@@ -167,7 +250,6 @@ Field<T> operator* (const Field<T>& u, const T& a)
 {
     Field<T> out(u.getSizeI(), u.getSizeJ());
 
-    #pragma omp parallel for
     for (int j = 0; j < u.getSizeJ(); j++)
     {
         for (int i = 0; i < u.getSizeI(); i++)
@@ -184,7 +266,6 @@ Field<T> operator/ (const Field<T>& u, const T& a)
 {
     Field<T> out(u.getSizeI(), u.getSizeJ());
 
-    #pragma omp parallel for
     for (int j = 0; j < u.getSizeJ(); j++)
     {
         for (int i = 0; i < u.getSizeI(); i++)
