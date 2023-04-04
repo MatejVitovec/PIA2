@@ -81,7 +81,7 @@ T Field<T>::normEuclid() const
         aux += data[i]*data[i];
     }
 
-    return sqrt(aux);    
+    return sqrt(aux);
 }
 
 template <typename T>

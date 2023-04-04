@@ -29,7 +29,7 @@ int main() {
 
 	//omp_set_num_threads(8);
 
-	PoissonSolver mySolver = PoissonSolver(0.005);
+	PoissonSolver mySolver = PoissonSolver(0.01);
 
 	mySolver.setFunctionValues(poissonFunction);
 
@@ -37,7 +37,7 @@ int main() {
 	mySolver.setBoundaryCondition(std::make_shared<NeumannBC>(0.0),
 									std::make_shared<DirichletBC>(0.0),
 									std::make_shared<DirichletBC>(0.0),
-									std::make_shared<DirichletBC>(2.0));
+									std::make_shared<DirichletBC>(3.0));
 
 	auto stop1 = std::chrono::high_resolution_clock::now();
 

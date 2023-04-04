@@ -216,7 +216,7 @@ void PoissonSolver::solve()
 		{
 			for (int i = 1; i < nn; ++i)
 			{
-				un(i, j) = (1.0/4.0)*(h*h*func(i, j) + u(i, j-1) + u(i-1, j) + u(i, j+1) + u(i+1, j));				
+				un(i, j) = (1.0/4.0)*(h*h*func(i, j) + u(i, j-1) + u(i-1, j) + u(i, j+1) + u(i+1, j));
 			}			
 		}
 
