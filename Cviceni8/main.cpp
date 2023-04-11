@@ -3,7 +3,6 @@
 #include <iostream>
 #include <iomanip>
 #include <chrono>
-#include <omp.h>
 
 #include "Field.hpp"
 #include "PoissonSolver.hpp"
@@ -26,8 +25,6 @@ double poissonFunction(int i, int j, double hh)
 
 
 int main() {
-
-	//omp_set_num_threads(8);
 
 	PoissonSolver mySolver = PoissonSolver(0.005);
 
