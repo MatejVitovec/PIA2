@@ -9,6 +9,7 @@ template <typename T>
 class Field
 {
     public:
+        Field() : iSize(0), jSize(0), data(0) {};
         Field(int n, int m) : iSize(n), jSize(m), data(n*m) {};
         Field(int n, int m, T value) : iSize(n), jSize(m), data(n*m, value) {};
 

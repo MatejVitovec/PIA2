@@ -8,31 +8,39 @@
 class PoissonSolver
 {
     public:
-        PoissonSolver(double h) : n((int) 1.0/h),
-                                intervalX(1.0),
-                                intervalY(1.0),
-                                h(h),
+        PoissonSolver();
+        PoissonSolver(double h_);
+        /*PoissonSolver(double h, double intX, double intY);*/
+        /*oissonSolver(double h) : h(h),
+                                firstX(1.0),
+                                firstY(1.0),
+                                n((int)(1.0/h)),
+                                m((int)(1.0/h)),
                                 u(n, n),
                                 func(n, n),                                
-                                targetError(10e-6) {};
+                                targetError(10e-6) {};*/
+/*	h = h;
+	firstX = 0;
+	firstY = 0;
+	n = (int)(1.0/h);
+	m = (int)(1.0/h);
+	u = Field<double>(n, m);
+	func = Field<double>(n, m);
+	targetError = 10e-6;*/
+
 
         void setBoundaryCondition(std::shared_ptr<BoundaryCondition>top, std::shared_ptr<BoundaryCondition>bottom, std::shared_ptr<BoundaryCondition> left, std::shared_ptr<BoundaryCondition> right);
         void setTargetError(double err);
-        void setInterval(double interval_X, double interval_Y);
-        void setStep(double hh);
         void setFunctionValues(Field<double> f_);
         void setFunctionValues(double (*function_ptr)(int, int, double));
 
         void solve();
-        //void solveGaussSeidel();
+        
         void saveData(std::string outputFileName);
-
         Field<double> getResult();
 
     private:
         void solveBoundaryCondition(Field<double>& un);
-        //void solveBoundaryConditionRedBlack(const Field<double>& u, Field<double>& un, int redBlack);
-        //Field<double> setRedBlack(Field<double>& u, int redBlack);
         double calculateError(const Field<double>& un);
         
         std::shared_ptr<BoundaryCondition> topBC;
@@ -40,9 +48,9 @@ class PoissonSolver
         std::shared_ptr<BoundaryCondition> leftBC;
         std::shared_ptr<BoundaryCondition> rightBC;
 
-        double intervalX;
-        double intervalY;
         double h;
+        int firstX;
+        int firstY;
         int n; //radky x
         int m; //sloupce y
 

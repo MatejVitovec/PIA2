@@ -4,7 +4,6 @@
 #include <iomanip>
 #include <chrono>
 
-#include "Field.hpp"
 #include "PoissonSolver.hpp"
 #include "BoundaryCondition.hpp"
 #include "DirichletBC.hpp"
@@ -26,7 +25,7 @@ double poissonFunction(int i, int j, double hh)
 
 int main() {
 
-	PoissonSolver mySolver = PoissonSolver(0.005);
+	PoissonSolver mySolver = PoissonSolver(0.01);
 
 	mySolver.setFunctionValues(poissonFunction);
 

@@ -1,9 +1,9 @@
 from matplotlib import pyplot as plt
 import numpy as np
 
-inputFileName = "Cviceni5/data.txt"
+inputFileName = "Cviceni8/data.txt"
 
-outputFileName = "Cviceni5/vystup.png"
+outputFileName = "Cviceni8/vystup.png"
 
 
 f = open(inputFileName, "r")
