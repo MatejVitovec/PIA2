@@ -1,11 +1,10 @@
 #include <cmath>
 #include <memory>
 #include <iostream>
-#include <iomanip>
-#include <chrono>
+#include <mpi.h>
 
 #include "PoissonSolver.hpp"
-#include "BoundaryCondition.hpp"
+
 #include "DirichletBC.hpp"
 #include "NeumannBC.hpp"
 
@@ -23,11 +22,28 @@ double poissonFunction(int i, int j, double hh)
 }
 
 
-int main() {
+int main(int argc, char **argv) {
 
-	PoissonSolver mySolver = PoissonSolver(0.01);
+	//MPI INIT
+    MPI_Init(&argc,&argv);
+	int rank;
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+	int size;
+	MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-	mySolver.setFunctionValues(poissonFunction);
+	if((size & (size - 1)) != 0)
+	{
+		std::cout << "nesprávný počet MPI instancí, musí být 2^n" << std::endl;
+		MPI_Finalize();
+		exit(0);
+	}
+
+
+
+
+	PoissonSolver mySolver = PoissonSolver(rank, size, 0.01);
+
+	/*mySolver.setFunctionValues(poissonFunction);
 
 	//top, bottom, left, right
 	mySolver.setBoundaryCondition(std::make_shared<NeumannBC>(0.0),
@@ -35,15 +51,13 @@ int main() {
 									std::make_shared<DirichletBC>(0.0),
 									std::make_shared<DirichletBC>(3.0));
 
-	auto stop1 = std::chrono::high_resolution_clock::now();
-
 	mySolver.solve();
 	//mySolver.solve();
 
-	auto stop2 = std::chrono::high_resolution_clock::now();
-	std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(stop2 - stop1).count() << " ms\n";
 
-	mySolver.saveData("data.txt");
+	mySolver.saveData("data.txt");*/
+
+	MPI_Finalize();
 
 	return 0;
 }

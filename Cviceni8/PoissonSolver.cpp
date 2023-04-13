@@ -7,8 +7,6 @@
 PoissonSolver::PoissonSolver()
 {
 	h = 0.01;
-	firstX = 0;
-	firstY = 0;
 	n = (int)(1.0/h);
 	m = (int)(1.0/h);
 	u = Field<double>(n, m);
@@ -16,16 +14,49 @@ PoissonSolver::PoissonSolver()
 	targetError = 10e-6;
 }
 
-PoissonSolver::PoissonSolver(double h_)
+PoissonSolver::PoissonSolver(int rank_, int size_, double h_)
 {
+	rank = rank_;
+	size = size_;
+
 	h = h_;
-	firstX = 0;
-	firstY = 0;
-	n = (int)(1.0/h);
-	m = (int)(1.0/h);
+
+	int globalN = (int)(1.0/h);
+	int globalM = (int)(1.0/h);
+
+	bool perfectSquare = false;
+	for (int i = 1; i * i <= size; i++)
+	{
+		if ((size % i == 0) && (size / i == i)) {
+			perfectSquare = true;
+		}
+    }
+
+	if(perfectSquare)
+	{
+		mpiMaxIndexX = sqrt(size);
+		mpiMaxIndexY = mpiMaxIndexX;
+
+		n = globalN/mpiMaxIndexX;
+		m = globalM/mpiMaxIndexX;
+	}
+	else
+	{
+		mpiMaxIndexY = sqrt(size/2);
+		mpiMaxIndexX = mpiMaxIndexY*2;
+
+		n = globalN/mpiMaxIndexX;
+		m = globalM/mpiMaxIndexY;
+	}
+
+	mpiIndexX = rank % mpiMaxIndexX;
+	mpiIndexY = (rank - mpiIndexX)/mpiMaxIndexX;
+
 	u = Field<double>(n, m);
 	func = Field<double>(n, m);
 	targetError = 10e-6;
+
+	std::cout << "rank: " << rank << " mpiX: " << mpiIndexX << " mpiY: " << mpiIndexY << std::endl;
 }
 
 /*PoissonSolver::PoissonSolver(double h, double intX, double intY)

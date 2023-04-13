@@ -1,6 +1,7 @@
 #ifndef POISSONSOLVER_H
 #define POISSONSOLVER_H
 
+#include <mpi.h>
 #include <memory>
 #include "Field.hpp"
 #include "BoundaryCondition.hpp"
@@ -9,24 +10,7 @@ class PoissonSolver
 {
     public:
         PoissonSolver();
-        PoissonSolver(double h_);
-        /*PoissonSolver(double h, double intX, double intY);*/
-        /*oissonSolver(double h) : h(h),
-                                firstX(1.0),
-                                firstY(1.0),
-                                n((int)(1.0/h)),
-                                m((int)(1.0/h)),
-                                u(n, n),
-                                func(n, n),                                
-                                targetError(10e-6) {};*/
-/*	h = h;
-	firstX = 0;
-	firstY = 0;
-	n = (int)(1.0/h);
-	m = (int)(1.0/h);
-	u = Field<double>(n, m);
-	func = Field<double>(n, m);
-	targetError = 10e-6;*/
+        PoissonSolver(int rank_, int size_, double h_);
 
 
         void setBoundaryCondition(std::shared_ptr<BoundaryCondition>top, std::shared_ptr<BoundaryCondition>bottom, std::shared_ptr<BoundaryCondition> left, std::shared_ptr<BoundaryCondition> right);
@@ -49,10 +33,16 @@ class PoissonSolver
         std::shared_ptr<BoundaryCondition> rightBC;
 
         double h;
-        int firstX;
-        int firstY;
         int n; //radky x
         int m; //sloupce y
+
+        //MPI
+        int rank;
+        int size;
+        int mpiIndexX;
+        int mpiIndexY;
+        int mpiMaxIndexX;
+        int mpiMaxIndexY;
 
         double targetError;
 

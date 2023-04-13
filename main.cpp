@@ -1,6 +1,5 @@
 #include <mpi.h>
 #include <iostream>
-#include <math.h>
 
 int main(int argc, char **argv) {
 
@@ -14,25 +13,27 @@ int main(int argc, char **argv) {
 
 	std::cout << "Procesor " << rank << "/" << size << "\n";
 
-    double moje_pi = 0.0;
-    const int n_max = 100000000/size;
-
-    double pi_lokalni_soucet = 0.0;
-	int j1 = rank*n_max;
-	int j2 = (rank+1)*n_max;
-
-    for (int j=j1;j<j2;++j) {
-         int index = j;
-         double znamenko = 1 - 2*(index % 2); // Timto nahradime vypocet mocniny (-1)^k pro stridani znamenka
-         pi_lokalni_soucet += znamenko*4.0/double(2*index + 1);
-    }
-    std::cout << "lokalni soucet = " << pi_lokalni_soucet << "\n";
-
-	MPI_Reduce(&pi_lokalni_soucet,&moje_pi,1,MPI_DOUBLE,MPI_SUM,0,MPI_COMM_WORLD);
+	int target;
+	if (rank == 0) target = 1;
+	else target = 0;
 
 	if (rank == 0) {
-    	std::cout << "chyba = " << M_PI - moje_pi << "\n";
+		int num[2000];
+		num[0] = 2;
+		MPI_Send(&num, 2000, MPI_INT, target, 0, MPI_COMM_WORLD);
+		int num2[2000];
+		MPI_Recv(&num2, 2000, MPI_INT, target, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		std::cout << num2[0] << " Proc: "<< rank << "\n";
 	}
+	else {
+		int num2[2000];
+		MPI_Recv(&num2, 2000, MPI_INT, target, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		std::cout << num2[0] << "Proc: "<< rank << "\n";
+
+		int num[2000];
+		MPI_Send(&num, 2000, MPI_INT, target, 0, MPI_COMM_WORLD);
+	}
+
 
     MPI_Finalize();
 
