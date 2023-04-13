@@ -18,20 +18,23 @@ void PoissonSolver::setTargetError(double err)
 	targetError = err;
 }
 
-void PoissonSolver::setInterval(double interval_)
+void PoissonSolver::setInterval(double interval_X, double interval_Y)
 {
-	interval = interval_;
-	n = (int) interval/h;
+	intervalX = interval_X;
+	intervalY = interval_Y;
+	n = (int) intervalX/h;
+	m = (int) intervalY/h;
 
-	u = Field<double>(n ,n);
+	u = Field<double>(n ,m);
 }
 
 void PoissonSolver::setStep(double hh)
 {
 	h = hh;
-	n = (int) interval/h;
+	n = (int) intervalX/h;
+	m = (int) intervalY/h;
 
-	u = Field<double>(n ,n);
+	u = Field<double>(n ,m);
 }
 
 void PoissonSolver::setFunctionValues(Field<double> f_)
@@ -41,7 +44,7 @@ void PoissonSolver::setFunctionValues(Field<double> f_)
 
 void PoissonSolver::setFunctionValues(double (*function_ptr)(int, int, double))
  {
-	for (int j = 0; j < n; j++)
+	for (int j = 0; j < m; j++)
 	{
 		for (int i = 0; i < n; i++)
 		{
@@ -55,6 +58,8 @@ void PoissonSolver::solveBoundaryCondition(Field<double>& un)
 	//todo podminky souhlasu
 	int nMinusOne = n - 1;
 	int nMinusTwo = n - 2;
+	int mMinusOne = m - 1;
+	int mMinusTwo = m - 2;
 	double hh = h;
 
 	//bottom
@@ -70,22 +75,22 @@ void PoissonSolver::solveBoundaryCondition(Field<double>& un)
 	}
 
 	//left
-	for (int j = 1; j < nMinusOne; j++)
+	for (int j = 1; j < mMinusOne; j++)
 	{
 		un(0, j) = leftBC->apply(u(0, j+1), u(1, j), u(0, j-1), func(0, j), hh);
 	}
 
 	//right
-	for (int j = 1; j < nMinusOne; j++)
+	for (int j = 1; j < mMinusOne; j++)
 	{
-		un(nMinusOne, j) = rightBC->apply(u(nMinusOne, j-1), u(nMinusTwo, j), u(nMinusOne, j+1), func(nMinusOne, j), hh);
+		un(mMinusOne, j) = rightBC->apply(u(mMinusOne, j-1), u(mMinusTwo, j), u(mMinusOne, j+1), func(mMinusOne, j), hh);
 	}
 
 	//corners
 	un(0, 0) = (u(1, 0) + u(0, 1))/2.0;
 	un(nMinusOne, 0) = (u(nMinusTwo, 0) + u(nMinusOne, 1))/2.0;
-	un(0, nMinusOne) = (u(1, nMinusOne) + u(0, nMinusTwo))/2.0;
-	un(nMinusOne, nMinusOne) = (u(nMinusTwo, nMinusOne) + u(nMinusOne, nMinusTwo))/2.0;
+	un(0, mMinusOne) = (u(1, mMinusOne) + u(0, mMinusTwo))/2.0;
+	un(nMinusOne, mMinusOne) = (u(nMinusTwo, mMinusOne) + u(nMinusOne, mMinusTwo))/2.0;
 
 }
 
@@ -188,11 +193,12 @@ void PoissonSolver::solveBoundaryCondition(Field<double>& un)
 void PoissonSolver::solve()
 {
 	//Jacobi	
-	Field<double> un(n, n);
+	Field<double> un(n, m);
 
 	int iter = 0;
 	double error = 10e10;
 	int nn = n - 1;
+	int mm = m - 1;
 
 	solveBoundaryCondition(un);
 	u = un;
@@ -201,7 +207,7 @@ void PoissonSolver::solve()
 	{
 		++iter;
 
-		for (int j = 1; j < nn; ++j)
+		for (int j = 1; j < mm; ++j)
 		{
 			for (int i = 1; i < nn; ++i)
 			{
@@ -299,8 +305,9 @@ void PoissonSolver::saveData(std::string outputFileName)
     std::ofstream writeToFile(outputFileName);
     writeToFile << h << std::endl;
     writeToFile << n << std::endl;
+	writeToFile << m << std::endl;
 
-    for (int j = 0; j < n; j++)
+    for (int j = 0; j < m; j++)
     {
         for (int i = 0; i < n; i++)
 		{

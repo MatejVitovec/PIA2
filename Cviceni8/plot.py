@@ -11,6 +11,9 @@ dat = []
 
 h = float(f.readline())
 n = int(f.readline())
+m = int(f.readline())
+
+#TODO m ; n
 
 for line in f:
     dat.append(float(line))

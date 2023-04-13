@@ -9,7 +9,8 @@ class PoissonSolver
 {
     public:
         PoissonSolver(double h) : n((int) 1.0/h),
-                                interval(1.0),
+                                intervalX(1.0),
+                                intervalY(1.0),
                                 h(h),
                                 u(n, n),
                                 func(n, n),                                
@@ -17,21 +18,21 @@ class PoissonSolver
 
         void setBoundaryCondition(std::shared_ptr<BoundaryCondition>top, std::shared_ptr<BoundaryCondition>bottom, std::shared_ptr<BoundaryCondition> left, std::shared_ptr<BoundaryCondition> right);
         void setTargetError(double err);
-        void setInterval(double interval_);
+        void setInterval(double interval_X, double interval_Y);
         void setStep(double hh);
         void setFunctionValues(Field<double> f_);
         void setFunctionValues(double (*function_ptr)(int, int, double));
 
         void solve();
-        void solveGaussSeidel();
+        //void solveGaussSeidel();
         void saveData(std::string outputFileName);
 
         Field<double> getResult();
 
     private:
         void solveBoundaryCondition(Field<double>& un);
-        void solveBoundaryConditionRedBlack(const Field<double>& u, Field<double>& un, int redBlack);
-        Field<double> setRedBlack(Field<double>& u, int redBlack);
+        //void solveBoundaryConditionRedBlack(const Field<double>& u, Field<double>& un, int redBlack);
+        //Field<double> setRedBlack(Field<double>& u, int redBlack);
         double calculateError(const Field<double>& un);
         
         std::shared_ptr<BoundaryCondition> topBC;
@@ -39,9 +40,11 @@ class PoissonSolver
         std::shared_ptr<BoundaryCondition> leftBC;
         std::shared_ptr<BoundaryCondition> rightBC;
 
-        double interval;
+        double intervalX;
+        double intervalY;
         double h;
-        int n;
+        int n; //radky x
+        int m; //sloupce y
 
         double targetError;
 

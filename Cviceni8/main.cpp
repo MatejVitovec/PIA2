@@ -38,7 +38,7 @@ int main() {
 
 	auto stop1 = std::chrono::high_resolution_clock::now();
 
-	mySolver.solveGaussSeidel();
+	mySolver.solve();
 	//mySolver.solve();
 
 	auto stop2 = std::chrono::high_resolution_clock::now();
