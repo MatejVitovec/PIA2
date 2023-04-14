@@ -52,6 +52,11 @@ PoissonSolver::PoissonSolver(int rank_, int size_, double h_)
 	mpiIndexX = rank % mpiMaxIndexX;
 	mpiIndexY = (rank - mpiIndexX)/mpiMaxIndexX;
 
+	if(mpiIndexX != 0) n++;
+	if(mpiIndexX != mpiMaxIndexX) n++;
+	if(mpiIndexY != 0) m++;
+	if(mpiIndexY != mpiMaxIndexY) m++;
+
 	u = Field<double>(n, m);
 	func = Field<double>(n, m);
 	targetError = 10e-6;
@@ -106,45 +111,39 @@ void PoissonSolver::setFunctionValues(double (*function_ptr)(int, int, double))
 	}
 }
 
+
+
 void PoissonSolver::solveBoundaryCondition(Field<double>& un)
 {
 	//MPI TODO
 
-	int nMinusOne = n - 1;
-	int nMinusTwo = n - 2;
-	int mMinusOne = m - 1;
-	int mMinusTwo = m - 2;
-	double hh = h;
-
-	//bottom
-	for (int i = 1; i < nMinusOne; i++)
+	if(mpiIndexX % 2 == 0)
 	{
-		un(i, 0) = bottomBC->apply(u(i-1, 0), u(i, 1), u(i+1, 0), func(i, 0), hh);
+		rightBC->apply(un, u, func, h);
+		leftBC->apply(un, u, func, h);
+	}
+	else
+	{
+		leftBC->apply(un, u, func, h);
+		rightBC->apply(un, u, func, h);
 	}
 
-	//top
-	for (int i = 1; i < nMinusOne; i++)
+	if(mpiIndexY % 2 == 0)
 	{
-		un(i, nMinusOne) = topBC->apply(u(i+1, nMinusOne), u(i, nMinusTwo), u(i-1, nMinusOne), func(i, nMinusOne), hh);
+		topBC->apply(un, u, func, h);
+		bottomBC->apply(un, u, func, h);
+	}
+	else
+	{
+		bottomBC->apply(un, u, func, h);
+		topBC->apply(un, u, func, h);
 	}
 
-	//left
-	for (int j = 1; j < mMinusOne; j++)
-	{
-		un(0, j) = leftBC->apply(u(0, j+1), u(1, j), u(0, j-1), func(0, j), hh);
-	}
-
-	//right
-	for (int j = 1; j < mMinusOne; j++)
-	{
-		un(mMinusOne, j) = rightBC->apply(u(mMinusOne, j-1), u(mMinusTwo, j), u(mMinusOne, j+1), func(mMinusOne, j), hh);
-	}
-
-	//corners
-	un(0, 0) = (u(1, 0) + u(0, 1))/2.0;
-	un(nMinusOne, 0) = (u(nMinusTwo, 0) + u(nMinusOne, 1))/2.0;
-	un(0, mMinusOne) = (u(1, mMinusOne) + u(0, mMinusTwo))/2.0;
-	un(nMinusOne, mMinusOne) = (u(nMinusTwo, mMinusOne) + u(nMinusOne, mMinusTwo))/2.0;
+	//corners of real boundary
+	if(mpiIndexX == 0 && mpiIndexY == 0) {un(0, 0) = (u(1, 0) + u(0, 1))/2.0;} 
+	if(mpiIndexX == mpiMaxIndexX && mpiIndexY == 0) {un(n-1, 0) = (u(n-2, 0) + u(n-1, 1))/2.0;}
+	if(mpiIndexX == 0 && mpiIndexY == mpiMaxIndexY) {un(0, m-1) = (u(1, m-1) + u(0, m-2))/2.0;}
+	if(mpiIndexX == mpiMaxIndexX && mpiIndexY == mpiMaxIndexY) {un(n-1, m-1) = (u(n-1, m-1) + u(n-1, m-2))/2.0;}
 
 }
 
@@ -161,7 +160,7 @@ void PoissonSolver::solve()
 	solveBoundaryCondition(un);
 	u = un;
 
-	while (error > targetError)
+	while (/*error > targetError*/ iter < 1000)
 	{
 		++iter;
 
@@ -175,7 +174,7 @@ void PoissonSolver::solve()
 
 		solveBoundaryCondition(un);
 
-		error = calculateError(un);
+		//error = calculateError(un);
 
 		u = un;
 	}
