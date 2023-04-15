@@ -3,6 +3,7 @@
 #include <fstream>
 
 #include "PoissonSolver.hpp"
+#include "VirtualBC.hpp"
 
 PoissonSolver::PoissonSolver()
 {
@@ -64,6 +65,19 @@ PoissonSolver::PoissonSolver(int rank_, int size_, double h_)
 	std::cout << "rank: " << rank << " mpiX: " << mpiIndexX << " mpiY: " << mpiIndexY << std::endl;
 }
 
+int PoissonSolver::collumsOfOptimalStructure(int size_)
+{
+	int colEstimate;
+	int aux;
+
+	while(colEstimate > 0)
+	{
+		colEstimate = round(sqrt(size_));
+		aux = size_ / colEstimate;
+		if(colEstimate*aux == size_) return colEstimate;
+	}
+}
+
 /*PoissonSolver::PoissonSolver(double h, double intX, double intY)
 {
 	h = h;
@@ -78,12 +92,42 @@ PoissonSolver::PoissonSolver(int rank_, int size_, double h_)
 
 void PoissonSolver::setBoundaryCondition(std::shared_ptr<BoundaryCondition>top, std::shared_ptr<BoundaryCondition>bottom, std::shared_ptr<BoundaryCondition> left, std::shared_ptr<BoundaryCondition> right)
 {
-	//MPI TODO
+	if(mpiIndexX == 0)
+	{
+		leftBC = left;
+	}
+	else
+	{
+		leftBC = std::make_shared<VirtualBC>(rank, rank - 1, BoundaryCondition::LEFT);
+	}
 
-	topBC = top;
-	bottomBC = bottom;
-	leftBC = left;
-	rightBC = right;
+	if(mpiIndexY == 0)
+	{
+		bottomBC = bottom;
+	}
+	else
+	{
+		bottomBC = std::make_shared<VirtualBC>(rank, rank - mpiMaxIndexX, BoundaryCondition::BOTTOM);
+	}
+
+	if(mpiIndexX == mpiMaxIndexX)
+	{
+		rightBC = right;
+	}
+	else
+	{
+		rightBC = std::make_shared<VirtualBC>(rank, rank + 1, BoundaryCondition::RIGHT);
+	}
+
+	if(mpiIndexY == mpiMaxIndexY)
+	{
+		topBC = top;
+	}
+	else
+	{
+		topBC = std::make_shared<VirtualBC>(rank, rank + mpiMaxIndexX, BoundaryCondition::TOP);
+	}
+
 }
 
 void PoissonSolver::setTargetError(double err)
@@ -91,22 +135,33 @@ void PoissonSolver::setTargetError(double err)
 	targetError = err;
 }
 
-void PoissonSolver::setFunctionValues(Field<double> f_)
+/*void PoissonSolver::setFunctionValues(Field<double> f_)
 {
-	//MPI TODO
-
 	func = f_;
-}
+}*/
 
 void PoissonSolver::setFunctionValues(double (*function_ptr)(int, int, double))
 {
-	//MPI TODO
+	int nn = n;
+	int mm = m;
+
+	if(mpiIndexX != 0) nn--;
+	if(mpiIndexY != 0) mm--;
+	if(mpiIndexX != mpiMaxIndexX) nn--;
+	if(mpiIndexY != mpiMaxIndexY) mm--;
+
+	int startX = mpiIndexX*nn;
+	int startY = mpiIndexY*mm;
+
+	if(mpiIndexX != 0) startX--;
+	if(mpiIndexY != 0) startY--;
+
 
 	for (int j = 0; j < m; j++)
 	{
 		for (int i = 0; i < n; i++)
 		{
-			func(i, j) = function_ptr(i, j, h);
+			func(i, j) = function_ptr(startX + i, startY + j, h);
 		}
 	}
 }
@@ -115,8 +170,6 @@ void PoissonSolver::setFunctionValues(double (*function_ptr)(int, int, double))
 
 void PoissonSolver::solveBoundaryCondition(Field<double>& un)
 {
-	//MPI TODO
-
 	if(mpiIndexX % 2 == 0)
 	{
 		rightBC->apply(un, u, func, h);
@@ -144,7 +197,6 @@ void PoissonSolver::solveBoundaryCondition(Field<double>& un)
 	if(mpiIndexX == mpiMaxIndexX && mpiIndexY == 0) {un(n-1, 0) = (u(n-2, 0) + u(n-1, 1))/2.0;}
 	if(mpiIndexX == 0 && mpiIndexY == mpiMaxIndexY) {un(0, m-1) = (u(1, m-1) + u(0, m-2))/2.0;}
 	if(mpiIndexX == mpiMaxIndexX && mpiIndexY == mpiMaxIndexY) {un(n-1, m-1) = (u(n-1, m-1) + u(n-1, m-2))/2.0;}
-
 }
 
 void PoissonSolver::solve()

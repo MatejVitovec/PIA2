@@ -43,15 +43,15 @@ int main(int argc, char **argv) {
 
 	PoissonSolver mySolver = PoissonSolver(rank, size, 0.01);
 
-	/*mySolver.setFunctionValues(poissonFunction);
+	//mySolver.setFunctionValues(poissonFunction);
 
 	//top, bottom, left, right
-	mySolver.setBoundaryCondition(std::make_shared<NeumannBC>(0.0),
-									std::make_shared<DirichletBC>(0.0),
-									std::make_shared<DirichletBC>(0.0),
-									std::make_shared<DirichletBC>(3.0));
+	mySolver.setBoundaryCondition(std::make_shared<NeumannBC>(0.0, BoundaryCondition::TOP),
+									std::make_shared<DirichletBC>(0.0, BoundaryCondition::BOTTOM),
+									std::make_shared<DirichletBC>(0.0, BoundaryCondition::LEFT),
+									std::make_shared<DirichletBC>(3.0, BoundaryCondition::RIGHT));
 
-	mySolver.solve();
+	/*mySolver.solve();
 	//mySolver.solve();
 
 

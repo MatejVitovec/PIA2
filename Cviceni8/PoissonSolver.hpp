@@ -15,7 +15,7 @@ class PoissonSolver
 
         void setBoundaryCondition(std::shared_ptr<BoundaryCondition>top, std::shared_ptr<BoundaryCondition>bottom, std::shared_ptr<BoundaryCondition> left, std::shared_ptr<BoundaryCondition> right);
         void setTargetError(double err);
-        void setFunctionValues(Field<double> f_);
+        //void setFunctionValues(Field<double> f_);
         void setFunctionValues(double (*function_ptr)(int, int, double));
 
         void solve();
@@ -26,6 +26,8 @@ class PoissonSolver
     private:
         void solveBoundaryCondition(Field<double>& un);
         double calculateError(const Field<double>& un);
+
+        int collumsOfOptimalStructure(int size_);
         
         std::shared_ptr<BoundaryCondition> topBC;
         std::shared_ptr<BoundaryCondition> bottomBC;
