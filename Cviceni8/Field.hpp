@@ -16,6 +16,7 @@ class Field
         int size() const;
         int getSizeI() const;
         int getSizeJ() const;
+        bool isVoid() const;
 
         T normEuclid() const;
         T oneNorm() const;
@@ -56,6 +57,17 @@ template <typename T>
 int Field<T>::getSizeJ() const
 {
     return jSize;
+}
+
+template <typename T>
+bool Field<T>::isVoid() const
+{
+    if(iSize == 0 && jSize == 0)
+    {
+        return true;
+    }
+    
+    return false;
 }
 
 template <typename T>

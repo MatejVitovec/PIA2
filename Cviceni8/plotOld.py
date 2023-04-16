@@ -1,9 +1,9 @@
 from matplotlib import pyplot as plt
 import numpy as np
 
-inputFileName = "Cviceni8/data.txt"
+inputFileName = "Cviceni8/data0.txt"
 
-outputFileName = "Cviceni8/vystup.png"
+outputFileName = "Cviceni8/vystup0.png"
 
 
 f = open(inputFileName, "r")
@@ -11,6 +11,9 @@ dat = []
 
 h = float(f.readline())
 n = int(f.readline())
+m = int(f.readline())
+
+#TODO m ; n
 
 for line in f:
     dat.append(float(line))

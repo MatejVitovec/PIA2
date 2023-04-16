@@ -12,8 +12,8 @@ class VirtualBC : public BoundaryCondition
         void apply(Field<double>& un, const Field<double>& u, const Field<double>& func, const double& h) const;
 
     private:
-        double rank;
-        double neighbourRank;
+        int rank;
+        int neighbourRank;
 };
 
 #endif // VIRTUALbc_H
