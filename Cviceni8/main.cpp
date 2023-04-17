@@ -43,9 +43,9 @@ int main(int argc, char **argv) {
 									std::make_shared<DirichletBC>(1.0, BoundaryCondition::LEFT),
 									std::make_shared<DirichletBC>(3.0, BoundaryCondition::RIGHT));
 
-	//mySolver.solve();
+	mySolver.solve();
 
-	//mySolver.saveData("data.txt");
+	mySolver.saveData("data.txt");
 
 	MPI_Finalize();
 

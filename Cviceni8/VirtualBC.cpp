@@ -69,8 +69,8 @@ void VirtualBC::apply(Field<double>& un, const Field<double>& u, const Field<dou
 
         //std::cout << "rank: " << rank << " n: " << n << " neighbourRank: " << neighbourRank << std::endl;
 
-        MPI_Recv(&recieveData[0], n, MPI_DOUBLE, neighbourRank, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        MPI_Send(&sendData[0], n, MPI_DOUBLE, neighbourRank, 0, MPI_COMM_WORLD);
+        MPI_Recv(&recieveData[0], m, MPI_DOUBLE, neighbourRank, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        MPI_Send(&sendData[0], m, MPI_DOUBLE, neighbourRank, 0, MPI_COMM_WORLD);
 
         for (int j = 0; j < m; j++)
 	    {
@@ -89,8 +89,8 @@ void VirtualBC::apply(Field<double>& un, const Field<double>& u, const Field<dou
 
         //std::cout << "rank: " << rank << " n: " << n << " neighbourRank: " << neighbourRank << std::endl;
 
-        MPI_Send(&sendData[0], n, MPI_DOUBLE, neighbourRank, 0, MPI_COMM_WORLD);
-        MPI_Recv(&recieveData[0], n, MPI_DOUBLE, neighbourRank, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        MPI_Send(&sendData[0], m, MPI_DOUBLE, neighbourRank, 0, MPI_COMM_WORLD);
+        MPI_Recv(&recieveData[0], m, MPI_DOUBLE, neighbourRank, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
         for (int j = 0; j < m; j++)
 	    {

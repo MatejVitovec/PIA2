@@ -48,7 +48,7 @@ PoissonSolver::PoissonSolver(int rank_, int size_, double h_)
 	func = Field<double>(n, m);
 	targetError = 10e-6;
 
-	std::cout << "rank: " << rank << " mpiX: " << mpiIndexX << " mpiY: " << mpiIndexY << std::endl;
+	std::cout << "rank: " << rank << " mpiX: " << mpiIndexX << " mpiY: " << mpiIndexY << " n:" << n << " m: " << m << std::endl;
 }
 
 int PoissonSolver::colsOfOptimalStructure(int size_)
@@ -71,37 +71,45 @@ void PoissonSolver::setBoundaryCondition(std::shared_ptr<BoundaryCondition>top, 
 	if(mpiIndexX == 0)
 	{
 		leftBC = left;
+		std::cout << "rank: " << rank << "byla pridana REALNA OP LEFT" << std::endl;
 	}
 	else
 	{
 		leftBC = std::make_shared<VirtualBC>(rank, rank - 1, BoundaryCondition::LEFT);
+		std::cout << "rank: " << rank << "byla pridana OP LEFT, soused: " << rank - 1 << std::endl;
 	}
 
 	if(mpiIndexY == 0)
 	{
 		bottomBC = bottom;
+		std::cout << "rank: " << rank << "byla pridana REALNA OP BOTTOM" << std::endl;
 	}
 	else
 	{
 		bottomBC = std::make_shared<VirtualBC>(rank, rank - mpiN, BoundaryCondition::BOTTOM);
+		std::cout << "rank: " << rank << "byla pridana OP BOTTOM, soused: " << rank - mpiN << std::endl;
 	}
 
-	if(mpiIndexX == (mpiN- 1))
+	if(mpiIndexX == (mpiN - 1))
 	{
 		rightBC = right;
+		std::cout << "rank: " << rank << "byla pridana REALNA OP RIGHT" << std::endl;
 	}
 	else
 	{
 		rightBC = std::make_shared<VirtualBC>(rank, rank + 1, BoundaryCondition::RIGHT);
+		std::cout << "rank: " << rank << "byla pridana OP RIGHT, soused: " << rank + 1 << std::endl;
 	}
 
 	if(mpiIndexY == (mpiM - 1))
 	{
 		topBC = top;
+		std::cout << "rank: " << rank << "byla pridana REALNA OP TOP" << std::endl;
 	}
 	else
 	{
 		topBC = std::make_shared<VirtualBC>(rank, rank + mpiN, BoundaryCondition::TOP);
+		std::cout << "rank: " << rank << "byla pridana OP TOP, soused: " << rank + mpiN << std::endl;
 	}
 }
 
@@ -137,7 +145,6 @@ void PoissonSolver::setFunctionValues(double (*function_ptr)(int, int, double))
 
 	//std::cout << "rank: " << rank << " startX: " << startX << " startY: " << startY << " n: "<< n << " m: " << m << std::endl;
 }
-
 
 
 void PoissonSolver::solveBoundaryCondition(Field<double>& un)
@@ -204,7 +211,7 @@ void PoissonSolver::solve()
 		u = un;
 	}
 
-	std::cout << "vypocet probehl s " << iter << " iteracemi" << std::endl; 
+	std::cout << "rank: " << rank << " ,vypocet probehl s " << iter << " iteracemi" << std::endl; 
 }
 
 /*double PoissonSolver::calculateError(const Field<double>& un)

@@ -19,7 +19,7 @@ void BoundaryCondition::apply(Field<double>& un, const Field<double>& u, const F
     {
         for (int i = 1; i < nMinusOne; i++)
         {
-            un(i, nMinusOne) = calculate(u(i+1, nMinusOne), u(i, nMinusTwo), u(i-1, nMinusOne), func(i, nMinusOne), h);
+            un(i, mMinusOne) = calculate(u(i+1, nMinusOne), u(i, nMinusTwo), u(i-1, nMinusOne), func(i, nMinusOne), h);
         }
     }
     else if(pos == LEFT)
@@ -33,7 +33,7 @@ void BoundaryCondition::apply(Field<double>& un, const Field<double>& u, const F
     {
         for (int j = 1; j < mMinusOne; j++)
         {
-            un(mMinusOne, j) = calculate(u(mMinusOne, j-1), u(mMinusTwo, j), u(mMinusOne, j+1), func(mMinusOne, j), h);
+            un(nMinusOne, j) = calculate(u(mMinusOne, j-1), u(mMinusTwo, j), u(mMinusOne, j+1), func(mMinusOne, j), h);
         }
     }
     else
