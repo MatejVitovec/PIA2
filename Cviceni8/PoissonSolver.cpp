@@ -193,7 +193,7 @@ void PoissonSolver::solve()
 	solveBoundaryCondition(un);
 	u = un;
 
-	while (iter < 10000)
+	while (iter < 50000)
 	{
 		++iter;
 

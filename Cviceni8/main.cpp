@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
 
 
-	PoissonSolver mySolver = PoissonSolver(rank, size, 0.01);
+	PoissonSolver mySolver = PoissonSolver(rank, size, 0.005);
 
 	mySolver.setFunctionValues(poissonFunction);
 
