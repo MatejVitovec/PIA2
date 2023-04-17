@@ -48,7 +48,7 @@ PoissonSolver::PoissonSolver(int rank_, int size_, double h_)
 	func = Field<double>(n, m);
 	targetError = 10e-6;
 
-	std::cout << "rank: " << rank << " mpiX: " << mpiIndexX << " mpiY: " << mpiIndexY << " n:" << n << " m: " << m << std::endl;
+	//std::cout << "rank: " << rank << " mpiX: " << mpiIndexX << " mpiY: " << mpiIndexY << " n:" << n << " m: " << m << std::endl;
 }
 
 int PoissonSolver::colsOfOptimalStructure(int size_)
@@ -71,45 +71,37 @@ void PoissonSolver::setBoundaryCondition(std::shared_ptr<BoundaryCondition>top, 
 	if(mpiIndexX == 0)
 	{
 		leftBC = left;
-		std::cout << "rank: " << rank << "byla pridana REALNA OP LEFT" << std::endl;
 	}
 	else
 	{
 		leftBC = std::make_shared<VirtualBC>(rank, rank - 1, BoundaryCondition::LEFT);
-		std::cout << "rank: " << rank << "byla pridana OP LEFT, soused: " << rank - 1 << std::endl;
 	}
 
 	if(mpiIndexY == 0)
 	{
 		bottomBC = bottom;
-		std::cout << "rank: " << rank << "byla pridana REALNA OP BOTTOM" << std::endl;
 	}
 	else
 	{
 		bottomBC = std::make_shared<VirtualBC>(rank, rank - mpiN, BoundaryCondition::BOTTOM);
-		std::cout << "rank: " << rank << "byla pridana OP BOTTOM, soused: " << rank - mpiN << std::endl;
 	}
 
 	if(mpiIndexX == (mpiN - 1))
 	{
 		rightBC = right;
-		std::cout << "rank: " << rank << "byla pridana REALNA OP RIGHT" << std::endl;
 	}
 	else
 	{
 		rightBC = std::make_shared<VirtualBC>(rank, rank + 1, BoundaryCondition::RIGHT);
-		std::cout << "rank: " << rank << "byla pridana OP RIGHT, soused: " << rank + 1 << std::endl;
 	}
 
 	if(mpiIndexY == (mpiM - 1))
 	{
 		topBC = top;
-		std::cout << "rank: " << rank << "byla pridana REALNA OP TOP" << std::endl;
 	}
 	else
 	{
 		topBC = std::make_shared<VirtualBC>(rank, rank + mpiN, BoundaryCondition::TOP);
-		std::cout << "rank: " << rank << "byla pridana OP TOP, soused: " << rank + mpiN << std::endl;
 	}
 }
 
@@ -150,6 +142,8 @@ void PoissonSolver::setFunctionValues(double (*function_ptr)(int, int, double))
 void PoissonSolver::solveBoundaryCondition(Field<double>& un)
 {
 	//std::cout << "rank: " << rank << " bc start" << std::endl;
+	//MPI_Barrier(MPI_COMM_WORLD);
+	
 	if(mpiIndexX % 2 == 0)
 	{
 		rightBC->apply(un, u, func, h);
@@ -203,7 +197,7 @@ void PoissonSolver::solve()
 				un(i, j) = (1.0/4.0)*(h*h*func(i, j) + u(i, j-1) + u(i-1, j) + u(i, j+1) + u(i+1, j));
 			}			
 		}
-
+		
 		solveBoundaryCondition(un);
 
 		//error = calculateError(un);
@@ -250,7 +244,6 @@ Field<double> PoissonSolver::getResult()
 
 			std::vector<double> recieveData(nn*mm);
 
-			std::cout << "recieve data n: " << nn << "recieve data m: " << mm << " startX: " << startIndexX << " startY: " << startIndexY << std::endl;
 			MPI_Recv(&recieveData[0], nn*mm, MPI_DOUBLE, iRank, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
 			for (int j = 0; j < mm; j++)

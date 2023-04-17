@@ -34,7 +34,7 @@ int main() {
 	mySolver.setFunctionValues(poissonFunction);
 
 	//top, bottom, left, right
-	mySolver.setBoundaryCondition(std::make_shared<NeumannBC>(0.0),
+	mySolver.setBoundaryCondition(std::make_shared<DirichletBC>(0.0),
 									std::make_shared<DirichletBC>(0.0),
 									std::make_shared<DirichletBC>(0.0),
 									std::make_shared<DirichletBC>(3.0));

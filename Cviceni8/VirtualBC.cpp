@@ -27,8 +27,6 @@ void VirtualBC::apply(Field<double>& un, const Field<double>& u, const Field<dou
 		    sendData[i] = u(i, 1);
 	    }
 
-        //std::cout << "rank: " << rank << " n: " << n << " neighbourRank: " << neighbourRank << std::endl;
-
         MPI_Recv(&recieveData[0], n, MPI_DOUBLE, neighbourRank, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         MPI_Send(&sendData[0], n, MPI_DOUBLE, neighbourRank, 0, MPI_COMM_WORLD);
 
@@ -47,8 +45,6 @@ void VirtualBC::apply(Field<double>& un, const Field<double>& u, const Field<dou
 		    sendData[i] = u(i, m-2);
 	    }
 
-        //std::cout << "rank: " << rank << " n: " << n << " neighbourRank: " << neighbourRank << std::endl;
-
         MPI_Send(&sendData[0], n, MPI_DOUBLE, neighbourRank, 0, MPI_COMM_WORLD);
         MPI_Recv(&recieveData[0], n, MPI_DOUBLE, neighbourRank, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
@@ -64,17 +60,15 @@ void VirtualBC::apply(Field<double>& un, const Field<double>& u, const Field<dou
 
         for (int j = 0; j < m; j++)
 	    {
-		    sendData[j] = u(j, 1);
+		    sendData[j] = u(1, j);
 	    }
-
-        //std::cout << "rank: " << rank << " n: " << n << " neighbourRank: " << neighbourRank << std::endl;
 
         MPI_Recv(&recieveData[0], m, MPI_DOUBLE, neighbourRank, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         MPI_Send(&sendData[0], m, MPI_DOUBLE, neighbourRank, 0, MPI_COMM_WORLD);
 
         for (int j = 0; j < m; j++)
 	    {
-		    un(j,0) = recieveData[j];
+		    un(0,j) = recieveData[j];
 	    }
     }
     else if(pos == RIGHT)
@@ -84,17 +78,15 @@ void VirtualBC::apply(Field<double>& un, const Field<double>& u, const Field<dou
 
         for (int j = 0; j < m; j++)
 	    {
-		    sendData[j] = u(j, n-2);
+		    sendData[j] = u(n-2, j);
 	    }
-
-        //std::cout << "rank: " << rank << " n: " << n << " neighbourRank: " << neighbourRank << std::endl;
 
         MPI_Send(&sendData[0], m, MPI_DOUBLE, neighbourRank, 0, MPI_COMM_WORLD);
         MPI_Recv(&recieveData[0], m, MPI_DOUBLE, neighbourRank, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
         for (int j = 0; j < m; j++)
 	    {
-		    un(j,n-1) = recieveData[j];
+		    un(n-1, j) = recieveData[j];
 	    }
     }
     else
