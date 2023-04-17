@@ -40,5 +40,19 @@ void BoundaryCondition::apply(Field<double>& un, const Field<double>& u, const F
     {
         std::cout << "chyba" << std::endl;
     }
+}
 
+
+void BoundaryCondition::applyPhysical(Field<double>& un, const Field<double>& u, const Field<double>& func, const double& h) const
+{
+    if(bcType != PHYSICAL) return;
+
+    apply(un, u, func, h);
+}
+
+void BoundaryCondition::applyVirtual(Field<double>& un, const Field<double>& u, const Field<double>& func, const double& h) const
+{
+    if(bcType != VIRTUAL) return;
+
+    apply(un, u, func, h);
 }

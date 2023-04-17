@@ -4,9 +4,9 @@
 class NeumannBC : public BoundaryCondition
 {
     public:
-        NeumannBC() : BoundaryCondition(NON), value(0.0) {};
-        NeumannBC(Position pos_) : BoundaryCondition(pos_), value(0.0) {};
-        NeumannBC(double val, Position pos_) : BoundaryCondition(pos_), value(val) {};
+        NeumannBC() : BoundaryCondition(NON, PHYSICAL), value(0.0) {};
+        NeumannBC(Position pos_) : BoundaryCondition(pos_, PHYSICAL), value(0.0) {};
+        NeumannBC(double val, Position pos_) : BoundaryCondition(pos_, PHYSICAL), value(val) {};
 
         double getValue();
         void setValue(double val);

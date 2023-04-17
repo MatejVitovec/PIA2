@@ -143,27 +143,34 @@ void PoissonSolver::solveBoundaryCondition(Field<double>& un)
 {
 	//std::cout << "rank: " << rank << " bc start" << std::endl;
 	//MPI_Barrier(MPI_COMM_WORLD);
+
+	rightBC->applyPhysical(un, u, func, h);
+	leftBC->applyPhysical(un, u, func, h);
+	bottomBC->applyPhysical(un, u, func, h);
+	topBC->applyPhysical(un, u, func, h);
 	
+	Field<double> pom = un;
+
 	if(mpiIndexX % 2 == 0)
 	{
-		rightBC->apply(un, u, func, h);
-		leftBC->apply(un, u, func, h);
+		rightBC->applyVirtual(un, pom, func, h);
+		leftBC->applyVirtual(un, pom, func, h);
 	}
 	else
 	{
-		leftBC->apply(un, u, func, h);
-		rightBC->apply(un, u, func, h);
+		leftBC->applyVirtual(un, pom, func, h);
+		rightBC->applyVirtual(un, pom, func, h);
 	}
 
 	if(mpiIndexY % 2 == 0)
 	{
-		topBC->apply(un, u, func, h);
-		bottomBC->apply(un, u, func, h);
+		topBC->applyVirtual(un, pom, func, h);
+		bottomBC->applyVirtual(un, pom, func, h);
 	}
 	else
 	{
-		bottomBC->apply(un, u, func, h);
-		topBC->apply(un, u, func, h);
+		bottomBC->applyVirtual(un, pom, func, h);
+		topBC->applyVirtual(un, pom, func, h);
 	}
 
 	//corners of real boundary

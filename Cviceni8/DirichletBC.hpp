@@ -4,9 +4,9 @@
 class DirichletBC : public BoundaryCondition
 {
     public:
-        DirichletBC() : BoundaryCondition(NON), value(0.0) {};
-        DirichletBC(Position pos_) : BoundaryCondition(pos_), value(0.0) {};
-        DirichletBC(double val, Position pos_) : BoundaryCondition(pos_), value(val) {};
+        DirichletBC() : BoundaryCondition(NON, PHYSICAL), value(0.0) {};
+        DirichletBC(Position pos_) : BoundaryCondition(pos_, PHYSICAL), value(0.0) {};
+        DirichletBC(double val, Position pos_) : BoundaryCondition(pos_, PHYSICAL), value(val) {};
 
         double getValue();
         void setValue(double val);
