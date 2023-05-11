@@ -16,8 +16,13 @@ planetNum = numRows - 1;
 
 G = 6.67e-11;
 
-tspan  = [0, 5000000000];
-[t, y] = ode78(@F, tspan, reshape(initialCondition',[],1));
+% 273 yars
+% tspan  = [0, 5206800000];
+% [t, y] = ode78(@F, tspan, reshape(initialCondition',[],1));
+[t, y] = ode4(@F, 0:8500:5206794000, reshape(initialCondition',[],1));
+
+
+
 
 [yRows,yCols] = size(y);
 
@@ -25,21 +30,35 @@ out = reshape(y, yRows, 6, planetNum);
 
 A(:,:) = out(yRows, :, :);
 
-zeme(:,:) = out(:, :, 4);
+mars(:,:) = out(:, :, 2);
+sun(:,:) = out(:, :, 1);
+
+merkurDist = zeros(length(t), 1);
+% mars vzdalenost
+i = 1;
+while i <= length(merkurDist)
+    merkurDist(i) = distance(mars(i,:), sun(i, :));
+    i = i + 1;
+end
+
+plot(t, merkurDist)
+yl = ylim; % Get current limits.
+ylim([0, yl(2)]);
 
 figure
 hold on
+axis equal
 
-plot(out(:, 1, 1), out(:, 2, 1));
-plot(out(:, 1, 2), out(:, 2, 2));
-plot(out(:, 1, 3), out(:, 2, 3));
-plot(out(:, 1, 4), out(:, 2, 4));
-plot(out(:, 1, 5), out(:, 2, 5));
-plot(out(:, 1, 6), out(:, 2, 6));
-plot(out(:, 1, 7), out(:, 2, 7));
-plot(out(:, 1, 8), out(:, 2, 8));
-plot(out(:, 1, 9), out(:, 2, 9));
-plot(out(:, 1, 10), out(:, 2, 10));
+plot3(out(:, 1, 1), out(:, 2, 1),  out(:, 3, 1));
+plot3(out(:, 1, 2), out(:, 2, 2),  out(:, 3, 2));
+plot3(out(:, 1, 3), out(:, 2, 3),  out(:, 3, 3));
+plot3(out(:, 1, 4), out(:, 2, 4),  out(:, 3, 4));
+plot3(out(:, 1, 5), out(:, 2, 5),  out(:, 3, 5));
+plot3(out(:, 1, 6), out(:, 2, 6),  out(:, 3, 6));
+plot3(out(:, 1, 7), out(:, 2, 7),  out(:, 3, 7));
+plot3(out(:, 1, 8), out(:, 2, 8),  out(:, 3, 8));
+plot3(out(:, 1, 9), out(:, 2, 9),  out(:, 3, 9));
+plot3(out(:, 1, 10), out(:, 2, 10),  out(:, 3, 10));
 
 % plot(initialCondition(1, 1), initialCondition(1, 2), "+");
 % plot(initialCondition(2, 1), initialCondition(2, 2), "+");
@@ -99,39 +118,26 @@ function [d] = distance(u1, u2)
 end
 
 
+function [t, y] = ode4(odefun, tspan, y0)
+    t = tspan;
+    h = tspan(2) - tspan(1);
+    
+    y = zeros(length(y0), length(t));
+    y(:,1) = y0;
+    
+    for i = 1:(length(t)-1)
+        k1 = odefun(t(i), y(:,i));
+        k2 = odefun(t(i) + 0.5*h, y(:,i) + 0.5*h*k1);
+        k3 = odefun((t(i) + 0.5*h), (y(:,i) + 0.5*h*k2));
+        k4 = odefun((t(i) + h), (y(:,i) + k3*h));
+        y(:,i+1) = y(:,i) + (1/6)*(k1 + 2*k2 + 2*k3 + k4)*h;
+    end
+
+    y = y.';
+end
 
 
-% zaloha
-% function [f] = F(~, u)
-%     global masses
-%     global G
-%     f = zeros(11, 10);
-%     planetNum = 10;
-% 
-%     index = 1;
-% 
-%     while index <= planetNum
-%     
-%         f(1,index) = u(4, index);
-%         f(2,index) = u(5, index);
-%         f(3,index) = u(6, index);
-%         f(4,index) = 0;
-%         f(5,index) = 0;
-%         f(6,index) = 0;
-%     
-%         i = 1;
-%         while i <= planetNum
-%             if i == index
-%                 index = index + 1;
-%                 continue;
-%             end
-%             f(4,index) = f(4,index) + G*masses(i)*((u(1, i) - u(1, index))/distance(u(:, i), u(:, index)));
-%             f(5,index) = f(5,index) + G*masses(i)*((u(2, i) - u(2, index))/distance(u(:, i), u(:, index)));
-%             f(6,index) = f(6,index) + G*masses(i)*((u(3, i) - u(3, index))/distance(u(:, i), u(:, index)));
-%             i = i + 1;
-%         end
-%         index = index + 1;
-%     end
-% 
-%     f = f(:);
-% end
+
+
+
+
