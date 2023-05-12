@@ -18,8 +18,10 @@ G = 6.67e-11;
 
 % 273 yars
 % tspan  = [0, 5206800000];
+% [t, y] = ode45(@F, tspan, reshape(initialCondition',[],1));
+% [t, y] = ode113(@F, tspan, reshape(initialCondition',[],1));
 % [t, y] = ode78(@F, tspan, reshape(initialCondition',[],1));
-[t, y] = ode4(@F, 0:8500:5206794000, reshape(initialCondition',[],1));
+[t, y] = ode4(@F, 0:60000:5199600000, reshape(initialCondition',[],1));
 
 
 
@@ -41,9 +43,12 @@ while i <= length(merkurDist)
     i = i + 1;
 end
 
+figure
+hold on
 plot(t, merkurDist)
 yl = ylim; % Get current limits.
 ylim([0, yl(2)]);
+hold off
 
 figure
 hold on
@@ -60,19 +65,7 @@ plot3(out(:, 1, 8), out(:, 2, 8),  out(:, 3, 8));
 plot3(out(:, 1, 9), out(:, 2, 9),  out(:, 3, 9));
 plot3(out(:, 1, 10), out(:, 2, 10),  out(:, 3, 10));
 
-% plot(initialCondition(1, 1), initialCondition(1, 2), "+");
-% plot(initialCondition(2, 1), initialCondition(2, 2), "+");
-% plot(initialCondition(3, 1), initialCondition(3, 2), "+");
-% plot(initialCondition(4, 1), initialCondition(4, 2), "+");
-% plot(initialCondition(5, 1), initialCondition(5, 2), "+");
-% plot(initialCondition(6, 1), initialCondition(6, 2), "+");
-% plot(initialCondition(7, 1), initialCondition(7, 2), "+");
-% plot(initialCondition(8, 1), initialCondition(8, 2), "+");
-% plot(initialCondition(9, 1), initialCondition(9, 2), "+");
-% plot(initialCondition(10, 1), initialCondition(10, 2), "+");
-
 legend(names);
-
 
 
 function [f] = F(~, u)
