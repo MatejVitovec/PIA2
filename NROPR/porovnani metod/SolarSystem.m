@@ -17,43 +17,37 @@ planetNum = numRows - 1;
 G = 6.67e-11;
 
 tspan  = [0, 5000000000];
-[t, y] = ode78(@F, tspan, reshape(initialCondition',[],1));
+[t, y] = ode45(@F, tspan, reshape(initialCondition',[],1));
 
 [yRows,yCols] = size(y);
 
 out = reshape(y, yRows, 6, planetNum);
 
-A(:,:) = out(yRows, :, :);
-
-zeme(:,:) = out(:, :, 4);
-
 figure
 hold on
 
-plot(out(:, 1, 1), out(:, 2, 1));
-plot(out(:, 1, 2), out(:, 2, 2));
-plot(out(:, 1, 3), out(:, 2, 3));
-plot(out(:, 1, 4), out(:, 2, 4));
-plot(out(:, 1, 5), out(:, 2, 5));
-plot(out(:, 1, 6), out(:, 2, 6));
-plot(out(:, 1, 7), out(:, 2, 7));
-plot(out(:, 1, 8), out(:, 2, 8));
-plot(out(:, 1, 9), out(:, 2, 9));
-plot(out(:, 1, 10), out(:, 2, 10));
+% plot(out(:, 1, 1), out(:, 2, 1));
+% plot(out(:, 1, 2), out(:, 2, 2));
+% plot(out(:, 1, 3), out(:, 2, 3));
+% plot(out(:, 1, 4), out(:, 2, 4));
+% plot(out(:, 1, 5), out(:, 2, 5));
+% plot(out(:, 1, 6), out(:, 2, 6));
+% plot(out(:, 1, 7), out(:, 2, 7));
+% plot(out(:, 1, 8), out(:, 2, 8));
+% plot(out(:, 1, 9), out(:, 2, 9));
+% plot(out(:, 1, 10), out(:, 2, 10));
 
-% plot(initialCondition(1, 1), initialCondition(1, 2), "+");
-% plot(initialCondition(2, 1), initialCondition(2, 2), "+");
-% plot(initialCondition(3, 1), initialCondition(3, 2), "+");
-% plot(initialCondition(4, 1), initialCondition(4, 2), "+");
-% plot(initialCondition(5, 1), initialCondition(5, 2), "+");
-% plot(initialCondition(6, 1), initialCondition(6, 2), "+");
-% plot(initialCondition(7, 1), initialCondition(7, 2), "+");
-% plot(initialCondition(8, 1), initialCondition(8, 2), "+");
-% plot(initialCondition(9, 1), initialCondition(9, 2), "+");
-% plot(initialCondition(10, 1), initialCondition(10, 2), "+");
-
+plot3(out(:, 1, 1), out(:, 2, 1), out(:, 3, 1));
+plot3(out(:, 1, 2), out(:, 2, 2), out(:, 3, 2));
+plot3(out(:, 1, 3), out(:, 2, 3), out(:, 3, 3));
+plot3(out(:, 1, 4), out(:, 2, 4), out(:, 3, 4));
+plot3(out(:, 1, 5), out(:, 2, 5), out(:, 3, 5));
+plot3(out(:, 1, 6), out(:, 2, 6), out(:, 3, 6));
+plot3(out(:, 1, 7), out(:, 2, 7), out(:, 3, 7));
+plot3(out(:, 1, 8), out(:, 2, 8), out(:, 3, 8));
+plot3(out(:, 1, 9), out(:, 2, 9), out(:, 3, 9));
+plot3(out(:, 1, 10), out(:, 2, 10), out(:, 3, 10));
 legend(names);
-
 
 
 function [f] = F(~, u)
