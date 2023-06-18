@@ -1,7 +1,7 @@
 clear all
 
 
-% mesh = loadGMSH("cavita_fine.msh");
+% mesh = loadGMSH("cavita.msh");
 
 mesh = cartesianMesh(25, 1/25);
 
@@ -21,17 +21,27 @@ pBc = setNeumannBoundaryCondition(1, "right", pBc, mesh);
 u0 = zeros(length(mesh.cells), 2);
 p0 = zeros(length(mesh.cells), 1);
 mu = ones(length(mesh.cells), 1)*1.e-4;
+% v = ones(length(mesh.cells), 1)*0.01;
 
 alpha = 0.7;
 beta = 0.3;
 
 [u, p, res] = SIMPLE(u0, p0, mu, mesh, uBc, pBc, alpha, beta, 50);
+% [u, p, res] = SIMPLENS(u0, p0, v, mesh, uBc, pBc, alpha, beta, 50);
 
 
 figure
 hold on
 plotPressure(p, mesh);
 plotVelocity(u, mesh)
+hold off
+
+figure
+plotRes(res);
+
+% saveVTK("output.vtk", mesh, u, p);
+
+
 
 
 
@@ -62,11 +72,12 @@ function [u, p, res] = SIMPLE(u0, p0, mu, mesh, uBc, pBc, alpha, beta, iteration
         
         p = beta*p + (1 - beta)*pOld;
         u = ubar - ra.*grad(p, mesh, pBc);
+
+        res(iter + 1, 1) = norm(uOld - u);
+        res(iter + 1, 2) = norm(pOld - p);
     
         if(rem(iter, 5) == 0)
-            rez(iter/5 + 1, 1) = norm(pOld - p)/(5*5);
-            rez(iter/5 + 1, 2) = norm(uOld - u)/(5*5);
-            disp(iter);
+            disp("iteration: " + iter);
         end    
     end
 end
@@ -534,7 +545,24 @@ function plotVelocity(u, mesh)
     for i = 1:length(u)
         drawArrow(x,y,uu(:,1), uu(:,2));
     end
+end
 
+function plotRes(res)
+    hold on
+
+    uRes = res(:,1);
+    pRes = res(:,2);
+    iter = length(uRes);
+
+    subplot(1,2,1);
+    plot(1:iter, uRes);
+    ylabel("norm(u)");
+    xlabel("iteratio");
+
+    subplot(1,2,2)
+    plot(1:iter, pRes);
+    ylabel("norm(p)");
+    xlabel("iteratio");
 end
 
 function saveVTK(fName, mesh, u, p)
@@ -601,4 +629,153 @@ end
 
 
 
+% ---------------Navier Stokes--------------------------
 
+
+function phi = phiInterpolation(u, mesh, bc)
+    phi = zeros(length(mesh.faces), 1);
+    
+    for f = 1:length(mesh.faces)
+        if mesh.neighbor(f) == 0
+            continue
+        end
+        o = mesh.owner(f);
+        n = mesh.neighbor(f);
+        phi(f,:) = dot(mesh.normal(f,:), (u(o,:) + u(n,:)) / 2);
+    end
+
+    for j = 1:length(mesh.boundaryNames)
+        idx = 1;
+        for f = cell2mat(mesh.boundaryFaces(j))'
+            o = mesh.owner(f);
+            c1 = bc(j,idx).c1;
+            c2 = bc(j,idx).c2;
+
+            ub = c1 + c2*u(o,:);
+            phi(f,:) = dot(mesh.normal(f,:), ub);
+            
+            idx = idx + 1;
+        end
+    end
+end
+
+
+
+function eqn = divPhi(phi, u, mesh, bc)
+    eqn.A = zeros(length(u));
+    eqn.b = zeros(length(u), 2);
+
+    for f = 1:length(mesh.faces)
+        if mesh.neighbor(f) == 0
+            continue
+        end
+        o = mesh.owner(f);
+        n = mesh.neighbor(f);
+        phi(f,:) = dot(mesh.normal(f,:), (u(o,:) + u(n,:)) / 2);
+
+        phiPlus = max(phi(f,:), 0);
+        phiMinus = min(phi(f,:), 0);
+        
+        eqn.A(o,o) = eqn.A(o,o) + phiPlus / mesh.volume(o);
+        eqn.A(o,n) = eqn.A(o,n) + phiMinus / mesh.volume(o);
+            
+        eqn.A(n,o) = eqn.A(n,o) - phiPlus / mesh.volume(n);
+        eqn.A(n,n) = eqn.A(n,n) - phiMinus / mesh.volume(n);
+    end
+
+    for j = 1:length(mesh.boundaryNames)
+        idx = 1;
+        for f = cell2mat(mesh.boundaryFaces(j))'
+            o = mesh.owner(f);
+            c1 = bc(j,idx).c1;
+            c2 = bc(j,idx).c2;
+            phiPlus = max(phi(f,:), 0);
+            phiMinus = min(phi(f,:), 0);
+
+            eqn.A(o,o) = eqn.A(o,o) + (phiPlus + phiMinus*c2) / mesh.volume(o);
+            eqn.b(o,:) = eqn.b(o,:) + phiMinus*c1 / mesh.volume(o);
+            
+            idx = idx + 1;
+        end
+    end
+end
+
+
+
+function phi = calcPhi(phi, u, p, ra, mesh, uBc, pBc)
+
+    for f = 1:length(mesh.faces)
+        if mesh.neighbor(f) == 0
+            continue
+        end
+        o = mesh.owner(f);
+        n = mesh.neighbor(f);
+        delta = norm(mesh.center(n,:) - mesh.center(o,:));
+        pn = (p(n) - p(o)) / delta;
+
+        phi(f,:) = dot(mesh.normal(f,:), (u(o,:) + u(n,:))/2 - (ra(o) + ra(n))/2*pn*norm(mesh.normal(f,:)));
+    end
+
+    for j = 1:length(mesh.boundaryNames)
+        idx = 1;
+        for f = cell2mat(mesh.boundaryFaces(j))'
+            o = mesh.owner(f);
+
+            c1 = uBc(j,idx).c1;
+            c2 = uBc(j,idx).c2;
+            ub = c1 + c2*u(o,:);
+
+            c1p = pBc(j,idx).c1;
+            c2p = pBc(j,idx).c2;
+            pb = c1p + c2p*p(o,:);
+
+            pn = (pb - p(o,:))/norm(mesh.center(o,:) - mesh.faceCenter(f,:));
+
+            phi(f,:) = dot(mesh.normal(f,:), ub) - ra(o)*pn;
+            
+            idx = idx + 1;
+        end
+    end
+end
+
+
+function [u, p, res] = SIMPLENS(u0, p0, v, mesh, uBc, pBc, alpha, beta, iteration)
+    
+    u = u0;
+    p = p0;
+    phi = phiInterpolation(u, mesh, uBc);
+
+    res = zeros(2);
+
+    for iter = 0:iteration
+        uOld = u;
+        pOld = p;
+    
+        uEqn = addEquations(divPhi(phi, u, mesh, uBc), minusEquation(laplace(v, u, mesh, uBc)));
+        
+        uEqn = relax(uEqn, u, alpha);
+        
+        u = solve(addVectorToEquation(uEqn, grad(p, mesh, pBc)));
+        
+        ra = 1./ac(uEqn);
+        
+        ubar = ra.*H(uEqn, u);
+        
+        pEqn = addVectorToEquation(laplace(ra, p, mesh, pBc), -div(ubar, mesh, uBc));
+        pEqn.A(1,1) = pEqn.A(1,1) - alpha/v(1);
+        
+        p = solve(pEqn);
+        
+        p = beta*p + (1 - beta)*pOld;
+        u = ubar - ra.*grad(p, mesh, pBc);
+
+        phi = calcPhi(phi, u, p, ra, mesh, uBc, pBc);
+    
+        res(iter + 1, 1) = norm(uOld - u);
+        res(iter + 1, 2) = norm(pOld - p);
+    
+        if(rem(iter, 5) == 0)
+            disp("iteration: " + iter);
+        end  
+    end
+end
