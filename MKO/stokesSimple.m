@@ -26,8 +26,8 @@ mu = ones(length(mesh.cells), 1)*1.e-4;
 alpha = 0.7;
 beta = 0.3;
 
-[u, p, res] = SIMPLE(u0, p0, mu, mesh, uBc, pBc, alpha, beta, 50);
-% [u, p, res] = SIMPLENS(u0, p0, v, mesh, uBc, pBc, alpha, beta, 50);
+[u, p, res] = SIMPLE(u0, p0, mu, mesh, uBc, pBc, alpha, beta, 50, true);
+% [u, p, res] = SIMPLENS(u0, p0, v, mesh, uBc, pBc, alpha, beta, 50, true);
 
 
 figure
@@ -45,7 +45,7 @@ plotRes(res);
 
 
 
-function [u, p, res] = SIMPLE(u0, p0, mu, mesh, uBc, pBc, alpha, beta, iteration)
+function [u, p, res] = SIMPLE(u0, p0, mu, mesh, uBc, pBc, alpha, beta, iteration, fixPressure)
     
     u = u0;
     p = p0;
@@ -61,17 +61,19 @@ function [u, p, res] = SIMPLE(u0, p0, mu, mesh, uBc, pBc, alpha, beta, iteration
         
         u = solve(addVectorToEquation(uEqn, grad(p, mesh, pBc)));
         
-        ra = 1./ac(uEqn);
+        rA = 1./ac(uEqn);
         
-        ubar = ra.*H(uEqn, u);
+        HbyA = rA.*H(uEqn, u);
         
-        pEqn = addVectorToEquation(laplace(ra, p, mesh, pBc), -div(ubar, mesh, uBc));
-        pEqn.A(1,1) = pEqn.A(1,1) - alpha/mu(1);
+        pEqn = addVectorToEquation(laplace(rA, p, mesh, pBc), -div(HbyA, mesh, uBc));
+        if fixPressure
+            pEqn.A(1,1) = pEqn.A(1,1) - alpha/mu(1);
+        end
         
         p = solve(pEqn);
         
         p = beta*p + (1 - beta)*pOld;
-        u = ubar - ra.*grad(p, mesh, pBc);
+        u = HbyA - rA.*grad(p, mesh, pBc);
 
         res(iter + 1, 1) = norm(uOld - u);
         res(iter + 1, 2) = norm(pOld - p);
@@ -556,13 +558,13 @@ function plotRes(res)
 
     subplot(1,2,1);
     plot(1:iter, uRes);
-    ylabel("norm(u)");
+    ylabel("||u||");
     xlabel("iteratio");
 
     subplot(1,2,2)
     plot(1:iter, pRes);
-    ylabel("norm(p)");
-    xlabel("iteratio");
+    ylabel("||p||");
+    xlabel("iteration");
 end
 
 function saveVTK(fName, mesh, u, p)
@@ -739,7 +741,7 @@ function phi = calcPhi(phi, u, p, ra, mesh, uBc, pBc)
 end
 
 
-function [u, p, res] = SIMPLENS(u0, p0, v, mesh, uBc, pBc, alpha, beta, iteration)
+function [u, p, res] = SIMPLENS(u0, p0, v, mesh, uBc, pBc, alpha, beta, iteration, fixPressure)
     
     u = u0;
     p = p0;
@@ -757,19 +759,21 @@ function [u, p, res] = SIMPLENS(u0, p0, v, mesh, uBc, pBc, alpha, beta, iteratio
         
         u = solve(addVectorToEquation(uEqn, grad(p, mesh, pBc)));
         
-        ra = 1./ac(uEqn);
+        rA = 1./ac(uEqn);
         
-        ubar = ra.*H(uEqn, u);
+        HbyA = rA.*H(uEqn, u);
         
-        pEqn = addVectorToEquation(laplace(ra, p, mesh, pBc), -div(ubar, mesh, uBc));
-        pEqn.A(1,1) = pEqn.A(1,1) - alpha/v(1);
+        pEqn = addVectorToEquation(laplace(rA, p, mesh, pBc), -div(HbyA, mesh, uBc));
+        if fixPressure
+            pEqn.A(1,1) = pEqn.A(1,1) - alpha/v(1);
+        end
         
         p = solve(pEqn);
         
         p = beta*p + (1 - beta)*pOld;
-        u = ubar - ra.*grad(p, mesh, pBc);
+        u = HbyA - rA.*grad(p, mesh, pBc);
 
-        phi = calcPhi(phi, u, p, ra, mesh, uBc, pBc);
+        phi = calcPhi(phi, u, p, rA, mesh, uBc, pBc);
     
         res(iter + 1, 1) = norm(uOld - u);
         res(iter + 1, 2) = norm(pOld - p);
